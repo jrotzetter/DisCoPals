@@ -11,7 +11,7 @@ Release](https://img.shields.io/github/release/jrotzetter/DisCoPals?include_prer
 [![Issues -
 DisCoPals](https://img.shields.io/github/issues/jrotzetter/DisCoPals)](https://github.com/jrotzetter/DisCoPals/issues "View open issues")
 [![R
-Version](https://img.shields.io/badge/R-%3E%3D4.5.3-blue?logo=R&logoColor=white)](https://cran.r-project.org/ "Go to CRAN homepage")
+Version](https://img.shields.io/badge/R-%3E%3D4.1-blue?logo=R&logoColor=white)](https://cran.r-project.org/ "Go to CRAN homepage")
 [![Project Status:
 WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 <!-- badges: end -->
@@ -31,6 +31,25 @@ components**:
     and filter palettes to ensure all colors are sufficiently
     distinguishable.
 
+## Features
+
+- **CIELAB Conversion**: Transform hexadecimal color codes into the
+  device-independent CIELAB color space, where Euclidean distances
+  approximate human perception.
+- **Perceptual Distance Metrics**: Calculate DeltaE values using CIE
+  1976, 1994, or 2000 formulas to quantify how different two colors
+  appear to the human eye.
+- **Contrast Ratio Analysis**: Compute WCAG-compliant contrast ratios to
+  ensure text and UI elements are readable.
+- **Palette Filtering**: Automatically subset color palettes based on
+  minimum perceptual distance and contrast thresholds, ensuring every
+  retained color is distinct enough from all others.
+- **Visualization**: Display palettes as barplots or grids, and
+  visualize pairwise comparison metrics in labeled swatch grids.
+- **Workflow Utilities**: Copy palettes directly to the clipboard for
+  easy integration into other scripts or design tools (Only works in
+  interactive R sessions).
+
 ## Installation
 
 The development version of DisCoPals can be installed from
@@ -39,6 +58,26 @@ The development version of DisCoPals can be installed from
 ``` r
 # install.packages("pak")
 pak::pak("jrotzetter/DisCoPals")
+```
+
+## Citation
+
+**DisCoPals** is a free, open-source project. If you find these
+functions useful for your publications, presentations, or commercial
+products, please consider citing the package. This helps track the
+project’s impact and ensures proper credit for the work involved in
+curating the color palettes.
+
+**BibTeX:**
+
+``` bibtex
+@Manual{DisCoPals,
+  title = {DisCoPals: Distinct Color Palettes for R},
+  author = {Jérémy Rotzetter},
+  year = {2026},
+  note = {R package version 0.0.0.9000},
+  url = {https://github.com/jrotzetter/DisCoPals},
+}   
 ```
 
 ## License

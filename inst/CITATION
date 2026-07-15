@@ -1,0 +1,14 @@
+citHeader("To cite the DisCoPals package use:")
+
+bibentry(
+  bibtype = "Manual",
+  title = "DisCoPals: Distinct Color Palettes for R",,
+  author = person(given = "Jérémy",
+    family = "Rotzetter",
+    role = c("aut", "cre"),
+    comment = c(ORCID = "0009-0007-6076-7077")
+    ),
+  year = "2026",
+  note = paste0("R package version ", meta$Version),
+  url = "https://github.com/jrotzetter/DisCoPals"
+)
