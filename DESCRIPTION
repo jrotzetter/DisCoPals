@@ -1,0 +1,21 @@
+Package: DisCoPals
+Title: DisCoPals: Distinct Color Palettes for R
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Jérémy",
+    family = "Rotzetter",
+    email  = "first.last@example.com",
+    role = c("aut", "cre"),
+    comment = c(ORCID = "0009-0007-6076-7077")
+    )
+Description: A framework to create, evaluate, and optimize color palettes for
+    accessibility and perceptual distinctness. Includes a curated collection of
+    ready-to-use distinct qualitative palettes for categorical data. Functions
+    convert colors to the perceptually uniform CIELAB space, calculate
+    industry-standard color difference metrics (DeltaE), measure WCAG-compliant
+    contrast ratios, and filter palettes to ensure all colors are sufficiently
+    distinguishable.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
