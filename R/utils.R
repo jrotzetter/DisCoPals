@@ -47,6 +47,7 @@ copy_palette <- function(pal) {
 #' @param pkgs A `character` vector of package names to check.
 #'
 #' @keywords internal
+#' @export
 #' @noRd
 .require_packages <- function(pkgs) {
   installed <- vapply(pkgs, requireNamespace, logical(1L), quietly = TRUE)
@@ -78,6 +79,7 @@ copy_palette <- function(pal) {
 #' @param pkgs A `character` vector of package names.
 #' @return `Logical`; TRUE if all packages are installed, FALSE otherwise.
 #' @keywords internal
+#' @export
 #' @noRd
 .has_packages <- function(pkgs) {
   if (length(pkgs) == 0) {

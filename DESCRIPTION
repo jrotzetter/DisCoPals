@@ -22,4 +22,6 @@ RoxygenNote: 7.3.3
 Depends: 
     R (>= 4.1)
 Suggests: 
-    clipr (>= 0.8.0)
+    clipr (>= 0.8.0),
+    colorspace (>= 2.1.2),
+    spacesXYZ (>= 1.6.0)
