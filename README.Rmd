@@ -20,12 +20,12 @@ r_version <- "any" # Default fallback
 # Check if "Depends" column exists before accessing it
 if ("Depends" %in% colnames(desc)) {
   depends_field <- desc[, "Depends"]
-  
+
   if (!is.na(depends_field) && nchar(depends_field) > 0) {
     # Match "R (>= X.Y)" or "R (>= X.Y.Z)"
     pattern <- "R \\(>=\\s*([0-9.]+)\\)"
     m <- regmatches(depends_field, regexec(pattern, depends_field))[[1]]
-    
+
     if (length(m) > 1) {
       r_version <- m[2] # Extract the version number (first capture group)
     }
@@ -37,7 +37,7 @@ if ("Depends" %in% colnames(desc)) {
 
 <!-- badges: start -->
 [![GitHub Release](https://img.shields.io/github/release/jrotzetter/DisCoPals?include_prereleases=&sort=semver&color=blue)](https://github.com/jrotzetter/DisCoPals/releases/ "View releases")
-[![License](https://img.shields.io/github/license/jrotzetter/DisCoPals)](LICENSE.md)
+[![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE.md)
 [![Issues - DisCoPals](https://img.shields.io/github/issues/jrotzetter/DisCoPals)](https://github.com/jrotzetter/DisCoPals/issues "View open issues")
 [![R Version](https://img.shields.io/badge/R-%3E%3D`r r_version`-blue?logo=R&logoColor=white)](https://cran.r-project.org/ "Go to CRAN homepage")
 [![Project Status: WIP](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)

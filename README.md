@@ -7,7 +7,7 @@
 
 [![GitHub
 Release](https://img.shields.io/github/release/jrotzetter/DisCoPals?include_prereleases=&sort=semver&color=blue)](https://github.com/jrotzetter/DisCoPals/releases/ "View releases")
-[![License](https://img.shields.io/github/license/jrotzetter/DisCoPals)](LICENSE.md)
+[![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE.md)
 [![Issues -
 DisCoPals](https://img.shields.io/github/issues/jrotzetter/DisCoPals)](https://github.com/jrotzetter/DisCoPals/issues "View open issues")
 [![R
