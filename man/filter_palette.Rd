@@ -30,7 +30,8 @@ from the final result \strong{unless} they were present in the original input \c
 Default is \code{FALSE}.}
 
 \item{metric}{\code{Character} specifying the CIE deltaE formula to use. Options are
-\code{"2000"} (default, most perceptually uniform), \code{"1994"}, or \code{"1976"}.}
+\code{"2000"} (default, CIEDE2000 - best correlation with human visual assessment),
+\code{"1994"}, or \code{"1976"}.}
 }
 \value{
 A \code{character} vector of hex codes filtered from \code{pal} that meet the
@@ -53,8 +54,9 @@ or equal to} the specified thresholds. This ensures that every remaining
 color is sufficiently distinct from all others in the palette.
 
 \strong{Thresholds are inclusive}: A color with a deltaE or contrast ratio exactly
-equal to the threshold is retained. This aligns with accessibility standards
-like WCAG, which treat threshold values as passing.
+equal to the threshold is retained. For contrast ratio, this matches WCAG's
+convention that the threshold itself is a passing value. No analogous WCAG
+rule exists for deltaE.
 
 \strong{Background Handling}: When \code{include_background = TRUE}, the function
 temporarily adds white and black to the comparison set. After filtering,

@@ -19,7 +19,7 @@ black (\verb{#000000}) are appended to the palette before comparison to evaluate
 readability against standard backgrounds.}
 
 \item{metric}{A \code{character} string specifying the DeltaE formula to use.
-Must be one of \code{"2000"} (CIEDE2000, most accurate), \code{"1994"} (CIE94),
+Must be one of \code{"2000"} (CIEDE2000, best perceptual accuracy), \code{"1994"} (CIE94),
 or \code{"1976"} (CIE76). Defaults to \code{"2000"}.}
 
 \item{white_point}{A \code{character} string specifying the reference white point

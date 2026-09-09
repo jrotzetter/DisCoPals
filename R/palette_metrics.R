@@ -101,7 +101,7 @@ convert_hex2Lab <- function(hex, white_point = "D65") {
 #'   black (`#000000`) are appended to the palette before comparison to evaluate
 #'   readability against standard backgrounds.
 #' @param metric A `character` string specifying the DeltaE formula to use.
-#'   Must be one of `"2000"` (CIEDE2000, most accurate), `"1994"` (CIE94),
+#'   Must be one of `"2000"` (CIEDE2000, best perceptual accuracy), `"1994"` (CIE94),
 #'   or `"1976"` (CIE76). Defaults to `"2000"`.
 #' @param white_point A `character` string specifying the reference white point
 #'   for Lab conversion. `"D65"` (default) matches sRGB/screen standards.
@@ -230,7 +230,8 @@ analyze_palette <- function(pal,
 #'   from the final result **unless** they were present in the original input `pal`.
 #'   Default is `FALSE`.
 #' @param metric `Character` specifying the CIE deltaE formula to use. Options are
-#'   `"2000"` (default, most perceptually uniform), `"1994"`, or `"1976"`.
+#'   `"2000"` (default, CIEDE2000 - best correlation with human visual assessment),
+#'    `"1994"`, or `"1976"`.
 #'
 #' @return A `character` vector of hex codes filtered from `pal` that meet the
 #'   specified thresholds (inclusive). Names from the original `pal` vector are
@@ -245,8 +246,9 @@ analyze_palette <- function(pal,
 #' color is sufficiently distinct from all others in the palette.
 #'
 #' **Thresholds are inclusive**: A color with a deltaE or contrast ratio exactly
-#' equal to the threshold is retained. This aligns with accessibility standards
-#' like WCAG, which treat threshold values as passing.
+#' equal to the threshold is retained. For contrast ratio, this matches WCAG's
+#' convention that the threshold itself is a passing value. No analogous WCAG
+#' rule exists for deltaE.
 #'
 #' **Background Handling**: When `include_background = TRUE`, the function
 #' temporarily adds white and black to the comparison set. After filtering,
