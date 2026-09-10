@@ -70,6 +70,23 @@ a warning issued.
 If no colors meet the thresholds, a warning is issued. If some colors are
 filtered out, a message reports how many were retained.
 }
+\section{Threshold guidance}{
+\strong{Contrast ratio} (W3C WCAG 2.2):
+\code{min_contrast} of 4.5 meets AA for normal text, 3.0 for large text
+and UI components, and 7.0 meets AAA for normal text.
+
+\strong{DeltaE} (CIEDE2000, categorical palettes):
+\code{min_distance} of 5 gives noticeable at-a-glance difference,
+10 gives strong distinction (recommended default), and 15 is
+high-distinction (useful for color-vision-deficiency robustness).
+The value of 10 is supported by empirical discrimination thresholds
+(\eqn{dE_{00} \approx 9.2}{dE_00 ~ 9.2} covers 99.7\% of observers; see
+\url{https://commons.erau.edu/edt/103/}).
+Note: with \emph{n} colors, all \eqn{\binom{n}{2} = n(n-1)/2} pairwise distances
+must meet the threshold simultaneously, so the constraint grows quadratically
+and practical palettes rarely exceed ~8--10 colors at \code{min_distance = 10}.
+}
+
 \examples{
 # Define a palette
 example_pal <- c(

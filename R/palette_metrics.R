@@ -262,6 +262,23 @@ analyze_palette <- function(pal,
 #' If no colors meet the thresholds, a warning is issued. If some colors are
 #' filtered out, a message reports how many were retained.
 #'
+#' # Threshold guidance
+#'
+#' **Contrast ratio** (W3C WCAG 2.2):
+#' `min_contrast` of 4.5 meets AA for normal text, 3.0 for large text
+#' and UI components, and 7.0 meets AAA for normal text.
+#'
+#' **DeltaE** (CIEDE2000, categorical palettes):
+#' `min_distance` of 5 gives noticeable at-a-glance difference,
+#' 10 gives strong distinction (recommended default), and 15 is
+#' high-distinction (useful for color-vision-deficiency robustness).
+#' The value of 10 is supported by empirical discrimination thresholds
+#' (\eqn{dE_{00} \approx 9.2}{dE_00 ~ 9.2} covers 99.7% of observers; see
+#' <https://commons.erau.edu/edt/103/>).
+#' Note: with *n* colors, all \eqn{\binom{n}{2} = n(n-1)/2} pairwise distances
+#' must meet the threshold simultaneously, so the constraint grows quadratically
+#' and practical palettes rarely exceed ~8--10 colors at `min_distance = 10`.
+#'
 #' @examples
 #' # Define a palette
 #' example_pal <- c(
