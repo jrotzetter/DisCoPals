@@ -16,3 +16,5 @@
 #' @importFrom rlang .data
 ## usethis namespace: end
 NULL
+
+utils::globalVariables("disco_palettes")
