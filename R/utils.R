@@ -87,3 +87,31 @@ copy_palette <- function(pal) {
   }
   all(vapply(pkgs, requireNamespace, logical(1L), quietly = TRUE))
 }
+
+
+#' Get a DisCoPals color palette
+#'
+#' Returns `n` colors from the specified palette. If `n` does not exceed the
+#' palette length, the first `n` colors are returned; otherwise, colors are
+#' interpolated via [grDevices::colorRampPalette()].
+#'
+#' @param n Number of colors to return.
+#' @param pal Name of the palette (see [disco_palettes] for available
+#'   names; default: "default").
+#' @return A `character` vector of `n` hex color codes.
+#' @export
+disco_pal <- function(n, pal = "default") {
+  palette <- disco_palettes[[pal]]
+  if (is.null(palette)) {
+    warning("Palette '", pal, "' not found, falling back to 'default'.")
+    palette <- disco_palettes[["default"]]
+  }
+  palette <- unname(palette) # Prevent ggplot2 from interpreting the names as the expected levels (breaks)
+  if (n <= length(palette)) {
+    palette[seq_len(n)]
+    # Alternatively for evenly-spaced sampling
+    # palette[unique(round(seq(1, length(palette), length.out = n)))]
+  } else {
+    grDevices::colorRampPalette(palette)(n)
+  }
+}

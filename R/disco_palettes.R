@@ -1,7 +1,8 @@
 #' DisCoPals color palettes
 #'
 #' A named list of color vectors. Each element is a character vector of hex
-#' codes.
+#' codes. Use [disco_pal()] to either retrieve a palette at a specified length
+#' or interpolate to any length.
 #'
 #' @note The palettes currently contain placeholder colors randomly
 #' sampled from the X11 color palette. They will be replaced with

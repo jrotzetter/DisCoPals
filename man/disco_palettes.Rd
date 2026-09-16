@@ -19,7 +19,8 @@ disco_palettes
 }
 \description{
 A named list of color vectors. Each element is a character vector of hex
-codes.
+codes. Use \code{\link[=disco_pal]{disco_pal()}} to either retrieve a palette at a specified length
+or interpolate to any length.
 }
 \note{
 The palettes currently contain placeholder colors randomly
