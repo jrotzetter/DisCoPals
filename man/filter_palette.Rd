@@ -2,12 +2,14 @@
 % Please edit documentation in R/palette_metrics.R
 \name{filter_palette}
 \alias{filter_palette}
-\title{Filter a color palette based on perceptual distance and contrast}
+\title{Filter a color palette based on perceptual distance, contrast, lightness, and chroma}
 \usage{
 filter_palette(
   pal,
   min_distance = NULL,
   min_contrast = NULL,
+  max_lightness = NULL,
+  min_chroma = NULL,
   include_background = FALSE,
   metric = c("2000", "1994", "1976")
 )
@@ -18,10 +20,19 @@ filter_palette(
 removed (keeping the first occurrence) with a warning.}
 
 \item{min_distance}{\code{Numeric} threshold for minimum deltaE (perceptual color distance).
-At least one of \code{min_distance} or \code{min_contrast} must be specified. Default is \code{NULL}.}
+At least one threshold must be specified. Default is \code{NULL}.}
 
 \item{min_contrast}{\code{Numeric} threshold for minimum contrast ratio.
-At least one of \code{min_distance} or \code{min_contrast} must be specified. Default is \code{NULL}.}
+At least one threshold must be specified. Default is \code{NULL}.}
+
+\item{max_lightness}{\code{Numeric} threshold for maximum lightness (L*). Colors with
+L* above this value are removed. Useful for excluding colors that are too
+pale to be readable against light backgrounds. At least one threshold must be
+specified. Default is \code{NULL}.}
+
+\item{min_chroma}{\code{Numeric} threshold for minimum chroma (C*). Colors with
+C* below this value are removed. Useful for excluding near-gray or washed-out
+colors. At least one threshold must be specified. Default is \code{NULL}.}
 
 \item{include_background}{\code{Logical}. If \code{TRUE}, includes standard background colors
 (white \verb{#FFFFFF} and black \verb{#000000}) in pairwise comparisons to test
@@ -41,17 +52,18 @@ preserved, and the original order is maintained. Returns an empty
 }
 \description{
 Filters a vector of color hex codes, retaining only those colors whose
-minimum perceptual distance (deltaE) and/or minimum contrast ratio to any
-other color in the palette is \strong{greater than or equal to} specified thresholds.
+minimum perceptual distance (deltaE), minimum contrast ratio, maximum
+lightness, and/or minimum chroma meet specified thresholds.
 This helps ensure that all colors in the resulting palette are sufficiently
-distinguishable.
+distinguishable, not too pale, and not too gray.
 }
 \details{
-The function computes all pairwise comparisons using \code{analyze_palette()} and
-determines the minimum deltaE and contrast ratio for each color relative to
-all others. A color is retained only if its minimum values are \strong{greater than
-or equal to} the specified thresholds. This ensures that every remaining
-color is sufficiently distinct from all others in the palette.
+The function computes all pairwise comparisons using \code{analyze_palette()}
+and determines the minimum deltaE and contrast ratio for each color
+relative to all others, as well as each color's lightness (L*)
+and chroma (C*).
+A color is retained only if all specified thresholds are met. This ensures
+that every remaining color is sufficiently distinct, visible, and saturated.
 
 \strong{Thresholds are inclusive}: A color with a deltaE or contrast ratio exactly
 equal to the threshold is retained. For contrast ratio, this matches WCAG's
@@ -69,8 +81,8 @@ a warning issued.
 
 If no colors meet the thresholds, a warning is issued. If some colors are
 filtered out, a message reports how many were retained.
-}
-\section{Threshold guidance}{
+\subsection{Threshold guidance}{
+
 \strong{Contrast ratio} (W3C WCAG 2.2):
 \code{min_contrast} of 4.5 meets AA for normal text, 3.0 for large text
 and UI components, and 7.0 meets AAA for normal text.
@@ -85,8 +97,18 @@ The value of 10 is supported by empirical discrimination thresholds
 Note: with \emph{n} colors, all \eqn{\binom{n}{2} = n(n-1)/2} pairwise distances
 must meet the threshold simultaneously, so the constraint grows quadratically
 and practical palettes rarely exceed ~8--10 colors at \code{min_distance = 10}.
-}
 
+\strong{Lightness} (L*):
+\code{max_lightness} of 80 removes very pale colors that may be hard to read
+against white backgrounds. Values of 70--85 should ensure visibility in
+digital contexts.
+
+\strong{Chroma} (C*):
+\code{min_chroma} of 10 removes near-gray colors that may be confused with
+neutral tones. Values of 15--20 ensure a minimum level of colorfulness,
+excluding colors that appear near-achromatic.
+}
+}
 \examples{
 # Define a palette
 example_pal <- c(
@@ -94,7 +116,9 @@ example_pal <- c(
   "navy" = "#000080",
   "bright_red" = "#FF0000",
   "dark_red" = "#8B0000",
-  "almost_blue" = "#0000FE" # Very close to blue
+  "almost_blue" = "#0000FE", # Very close to blue
+  "pale_yellow" = "#F3E5AB", # Very light (L* = 90)
+  "medium_gray" = "#848482" # Achromatic (C* = 1)
 )
 
 # Filter by minimum distance (inclusive)
@@ -105,6 +129,20 @@ filter_palette(example_pal, min_distance = 0, min_contrast = 2)
 
 # Filter by both criteria
 filter_palette(example_pal, min_distance = 5, min_contrast = 1.5)
+
+# Exclude colors that are too light
+filter_palette(example_pal, max_lightness = 80)
+
+# Exclude near-gray colors
+filter_palette(example_pal, min_chroma = 15)
+
+# Combine all criteria
+filter_palette(example_pal,
+  min_distance = 10,
+  min_contrast = 1.5,
+  max_lightness = 80,
+  min_chroma = 15
+)
 
 # Include backgrounds in comparison but exclude from result
 filter_palette(example_pal, min_distance = 10, include_background = TRUE)

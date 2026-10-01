@@ -229,21 +229,28 @@ analyze_palette <- function(pal,
 }
 
 
-#' Filter a color palette based on perceptual distance and contrast
+#' Filter a color palette based on perceptual distance, contrast, lightness, and chroma
 #'
 #' Filters a vector of color hex codes, retaining only those colors whose
-#' minimum perceptual distance (deltaE) and/or minimum contrast ratio to any
-#' other color in the palette is **greater than or equal to** specified thresholds.
+#' minimum perceptual distance (deltaE), minimum contrast ratio, maximum
+#' lightness, and/or minimum chroma meet specified thresholds.
 #' This helps ensure that all colors in the resulting palette are sufficiently
-#' distinguishable.
+#' distinguishable, not too pale, and not too gray.
 #'
 #' @param pal A named or unnamed `character` vector of color hex codes
 #'   (e.g., `c("#FF0000", "#00FF00")`). Duplicate hex codes are automatically
 #'   removed (keeping the first occurrence) with a warning.
 #' @param min_distance `Numeric` threshold for minimum deltaE (perceptual color distance).
-#'   At least one of `min_distance` or `min_contrast` must be specified. Default is `NULL`.
+#'   At least one threshold must be specified. Default is `NULL`.
 #' @param min_contrast `Numeric` threshold for minimum contrast ratio.
-#'   At least one of `min_distance` or `min_contrast` must be specified. Default is `NULL`.
+#'   At least one threshold must be specified. Default is `NULL`.
+#' @param max_lightness `Numeric` threshold for maximum lightness (L*). Colors with
+#'   L* above this value are removed. Useful for excluding colors that are too
+#'   pale to be readable against light backgrounds. At least one threshold must be
+#'   specified. Default is `NULL`.
+#' @param min_chroma `Numeric` threshold for minimum chroma (C*). Colors with
+#'   C* below this value are removed. Useful for excluding near-gray or washed-out
+#'   colors. At least one threshold must be specified. Default is `NULL`.
 #' @param include_background `Logical`. If `TRUE`, includes standard background colors
 #'   (white `#FFFFFF` and black `#000000`) in pairwise comparisons to test
 #'   distinguishability against backgrounds. These background colors are excluded
@@ -259,45 +266,56 @@ analyze_palette <- function(pal,
 #'   `character` vector if no comparisons can be made or no colors meet thresholds.
 #'
 #' @details
-#' The function computes all pairwise comparisons using `analyze_palette()` and
-#' determines the minimum deltaE and contrast ratio for each color relative to
-#' all others. A color is retained only if its minimum values are **greater than
-#' or equal to** the specified thresholds. This ensures that every remaining
-#' color is sufficiently distinct from all others in the palette.
+#'   The function computes all pairwise comparisons using `analyze_palette()`
+#'   and determines the minimum deltaE and contrast ratio for each color
+#'   relative to all others, as well as each color's lightness (L*)
+#'   and chroma (C*).
+#'   A color is retained only if all specified thresholds are met. This ensures
+#'   that every remaining color is sufficiently distinct, visible, and saturated.
 #'
-#' **Thresholds are inclusive**: A color with a deltaE or contrast ratio exactly
-#' equal to the threshold is retained. For contrast ratio, this matches WCAG's
-#' convention that the threshold itself is a passing value. No analogous WCAG
-#' rule exists for deltaE.
+#'   **Thresholds are inclusive**: A color with a deltaE or contrast ratio exactly
+#'   equal to the threshold is retained. For contrast ratio, this matches WCAG's
+#'   convention that the threshold itself is a passing value. No analogous WCAG
+#'   rule exists for deltaE.
 #'
-#' **Background Handling**: When `include_background = TRUE`, the function
-#' temporarily adds white and black to the comparison set. After filtering,
-#' these backgrounds are removed from the result unless they were explicitly
-#' provided in the original `pal` input.
+#'   **Background Handling**: When `include_background = TRUE`, the function
+#'   temporarily adds white and black to the comparison set. After filtering,
+#'   these backgrounds are removed from the result unless they were explicitly
+#'   provided in the original `pal` input.
 #'
-#' **Duplicate Handling**: Exact duplicate hex codes in the input are detected
-#' and reduced to a single occurrence (the first one) before comparison, with
-#' a warning issued.
+#'   **Duplicate Handling**: Exact duplicate hex codes in the input are detected
+#'   and reduced to a single occurrence (the first one) before comparison, with
+#'   a warning issued.
 #'
-#' If no colors meet the thresholds, a warning is issued. If some colors are
-#' filtered out, a message reports how many were retained.
+#'   If no colors meet the thresholds, a warning is issued. If some colors are
+#'   filtered out, a message reports how many were retained.
 #'
-#' # Threshold guidance
+#'   ## Threshold guidance
 #'
-#' **Contrast ratio** (W3C WCAG 2.2):
-#' `min_contrast` of 4.5 meets AA for normal text, 3.0 for large text
-#' and UI components, and 7.0 meets AAA for normal text.
+#'   **Contrast ratio** (W3C WCAG 2.2):
+#'   `min_contrast` of 4.5 meets AA for normal text, 3.0 for large text
+#'   and UI components, and 7.0 meets AAA for normal text.
 #'
-#' **DeltaE** (CIEDE2000, categorical palettes):
-#' `min_distance` of 5 gives noticeable at-a-glance difference,
-#' 10 gives strong distinction (recommended default), and 15 is
-#' high-distinction (useful for color-vision-deficiency robustness).
-#' The value of 10 is supported by empirical discrimination thresholds
-#' (\eqn{dE_{00} \approx 9.2}{dE_00 ~ 9.2} covers 99.7% of observers; see
-#' <https://commons.erau.edu/edt/103/>).
-#' Note: with *n* colors, all \eqn{\binom{n}{2} = n(n-1)/2} pairwise distances
-#' must meet the threshold simultaneously, so the constraint grows quadratically
-#' and practical palettes rarely exceed ~8--10 colors at `min_distance = 10`.
+#'   **DeltaE** (CIEDE2000, categorical palettes):
+#'   `min_distance` of 5 gives noticeable at-a-glance difference,
+#'   10 gives strong distinction (recommended default), and 15 is
+#'   high-distinction (useful for color-vision-deficiency robustness).
+#'   The value of 10 is supported by empirical discrimination thresholds
+#'   (\eqn{dE_{00} \approx 9.2}{dE_00 ~ 9.2} covers 99.7% of observers; see
+#'   <https://commons.erau.edu/edt/103/>).
+#'   Note: with *n* colors, all \eqn{\binom{n}{2} = n(n-1)/2} pairwise distances
+#'   must meet the threshold simultaneously, so the constraint grows quadratically
+#'   and practical palettes rarely exceed ~8--10 colors at `min_distance = 10`.
+#'
+#'   **Lightness** (L*):
+#'   `max_lightness` of 80 removes very pale colors that may be hard to read
+#'   against white backgrounds. Values of 70--85 should ensure visibility in
+#'   digital contexts.
+#'
+#'   **Chroma** (C*):
+#'   `min_chroma` of 10 removes near-gray colors that may be confused with
+#'   neutral tones. Values of 15--20 ensure a minimum level of colorfulness,
+#'   excluding colors that appear near-achromatic.
 #'
 #' @examples
 #' # Define a palette
@@ -306,7 +324,9 @@ analyze_palette <- function(pal,
 #'   "navy" = "#000080",
 #'   "bright_red" = "#FF0000",
 #'   "dark_red" = "#8B0000",
-#'   "almost_blue" = "#0000FE" # Very close to blue
+#'   "almost_blue" = "#0000FE", # Very close to blue
+#'   "pale_yellow" = "#F3E5AB", # Very light (L* = 90)
+#'   "medium_gray" = "#848482" # Achromatic (C* = 1)
 #' )
 #'
 #' # Filter by minimum distance (inclusive)
@@ -318,11 +338,26 @@ analyze_palette <- function(pal,
 #' # Filter by both criteria
 #' filter_palette(example_pal, min_distance = 5, min_contrast = 1.5)
 #'
+#' # Exclude colors that are too light
+#' filter_palette(example_pal, max_lightness = 80)
+#'
+#' # Exclude near-gray colors
+#' filter_palette(example_pal, min_chroma = 15)
+#'
+#' # Combine all criteria
+#' filter_palette(example_pal,
+#'   min_distance = 10,
+#'   min_contrast = 1.5,
+#'   max_lightness = 80,
+#'   min_chroma = 15
+#' )
+#'
 #' # Include backgrounds in comparison but exclude from result
 #' filter_palette(example_pal, min_distance = 10, include_background = TRUE)
 #'
 #' @export
 filter_palette <- function(pal, min_distance = NULL, min_contrast = NULL,
+                           max_lightness = NULL, min_chroma = NULL,
                            include_background = FALSE,
                            metric = c("2000", "1994", "1976")) {
   metric <- match.arg(metric, choices = c("2000", "1994", "1976"))
@@ -335,20 +370,29 @@ filter_palette <- function(pal, min_distance = NULL, min_contrast = NULL,
   if (!is.null(min_contrast) && !is.numeric(min_contrast)) {
     stop("Argument 'min_contrast' must be NULL or a numeric value.", call. = FALSE)
   }
-  if (is.null(min_distance) && is.null(min_contrast)) {
-    stop("At least one of 'min_distance' or 'min_contrast' must be specified.", call. = FALSE)
+  if (!is.null(max_lightness) && !is.numeric(max_lightness)) {
+    stop("Argument 'max_lightness' must be NULL or a numeric value.", call. = FALSE)
+  }
+  if (!is.null(min_chroma) && !is.numeric(min_chroma)) {
+    stop("Argument 'min_chroma' must be NULL or a numeric value.", call. = FALSE)
+  }
+  if (is.null(min_distance) && is.null(min_contrast) &&
+    is.null(max_lightness) && is.null(min_chroma)) {
+    stop("At least one threshold must be specified.", call. = FALSE)
   }
 
   # Handle empty or single-color input
   if (length(pal) == 0) {
-    return(character(0))
+    return(character(0L))
   }
+
   if (length(pal) == 1) {
     message("Only one color provided; no comparisons possible. Returning input.")
     return(pal)
   }
 
-  # Normalize input to uppercase to ensure exact matching with background
+  # Normalize input to uppercase to ensure case-insensitive match if hex codes
+  # vary, especially for exact matching with background
   pal <- toupper(pal)
 
   # --- 2. Snapshot Original Backgrounds ---
@@ -357,8 +401,7 @@ filter_palette <- function(pal, min_distance = NULL, min_contrast = NULL,
   std_backgrounds <- c("#FFFFFF", "#000000")
 
   # Record which of these were ALREADY in the input palette
-  # Ensure case-insensitive match if hex codes vary (e.g. "#ffffff" vs "#FFFFFF")
-  original_backgrounds_present <- pal[toupper(pal) %in% toupper(std_backgrounds)]
+  original_backgrounds_present <- pal[pal %in% std_backgrounds]
 
   # Preserve names and track original indices
   pal_names <- names(pal)
@@ -382,7 +425,7 @@ filter_palette <- function(pal, min_distance = NULL, min_contrast = NULL,
   combos <- analyze_palette(pal_df$hex, include_background = include_background, metric = metric)
   if (is.null(combos) || nrow(combos) == 0) {
     warning("No color comparisons returned.", call. = FALSE)
-    return(character(0))
+    return(character(0L))
   }
 
   # --- 4. Minima Calculation ---
@@ -391,16 +434,22 @@ filter_palette <- function(pal, min_distance = NULL, min_contrast = NULL,
   all_colors <- c(combos$Col_1, combos$Col_2)
   all_de <- c(combos$deltaE, combos$deltaE)
   all_cr <- c(combos$contrast_ratio, combos$contrast_ratio)
+  all_L <- c(combos$L_1, combos$L_2)
+  all_C <- c(combos$C_1, combos$C_2)
 
   # Calculate minimum metric for each color across all its pairs
   min_de <- tapply(all_de, all_colors, min)
   min_cr <- tapply(all_cr, all_colors, min)
+  min_L <- tapply(all_L, all_colors, min)
+  min_C <- tapply(all_C, all_colors, min)
 
   # Create a lookup table
   minima <- data.frame(
     Color = names(min_de),
     Value_de = as.numeric(min_de),
     Value_cr = as.numeric(min_cr),
+    Value_L = as.numeric(min_L),
+    Value_C = as.numeric(min_C),
     stringsAsFactors = FALSE
   )
 
@@ -409,6 +458,8 @@ filter_palette <- function(pal, min_distance = NULL, min_contrast = NULL,
   keep <- rep(TRUE, nrow(minima))
   if (!is.null(min_distance)) keep <- keep & (minima$Value_de >= min_distance)
   if (!is.null(min_contrast)) keep <- keep & (minima$Value_cr >= min_contrast)
+  if (!is.null(max_lightness)) keep <- keep & (minima$Value_L <= max_lightness)
+  if (!is.null(min_chroma)) keep <- keep & (minima$Value_C >= min_chroma)
 
   valid_hex <- minima$Color[keep]
 
@@ -416,7 +467,7 @@ filter_palette <- function(pal, min_distance = NULL, min_contrast = NULL,
 
   if (include_background && length(valid_hex) > 0) {
     # Identify backgrounds currently in the result
-    backgrounds_in_result <- valid_hex[toupper(valid_hex) %in% toupper(std_backgrounds)]
+    backgrounds_in_result <- valid_hex[valid_hex %in% std_backgrounds]
 
     # Determine which to remove: those in result BUT NOT in original input
     to_remove <- setdiff(backgrounds_in_result, original_backgrounds_present)
