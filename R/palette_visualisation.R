@@ -16,6 +16,10 @@ show_colors <- function(pal, as_bar = TRUE, cex_label = 0.7) {
   pal_name <- deparse(substitute(pal))
   len_pal <- length(pal)
 
+  if (len_pal == 0) {
+    stop("Argument 'pal' is empty. No hex color codes to plot.")
+  }
+
   # Validation for hex codes (3 or 6 digits, with optional alpha channel)
   hex_pattern <- "^#[0-9A-Fa-f]{3,8}$"
   if (!is.character(pal) || !all(grepl(hex_pattern, pal))) {
