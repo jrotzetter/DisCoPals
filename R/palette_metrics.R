@@ -93,8 +93,8 @@ convert_hex2Lab <- function(hex, white_point = "D65") {
 #' Analyze Color Palette Accessibility and Perceptual Differences
 #'
 #' Calculates pairwise color differences for a given palette using contrast ratio
-#' and DeltaE metrics. This function generates all unique pairs of colors in the
-#' input palette and computes perceptual differences and accessibility contrast.
+#' and DeltaE metrics. All unique pairs of colors in the input palette are
+#' generated and their perceptual differences and accessibility contrast computed.
 #'
 #' @param pal A `character` vector of hexadecimal color codes (e.g., `c("#FF0000", "#00FF00")`).
 #' @param include_background `Logical`. If `TRUE` (default), white (`#FFFFFF`) and
@@ -113,6 +113,10 @@ convert_hex2Lab <- function(hex, white_point = "D65") {
 #'     \item `Col_2`: Hex code of the second color in the pair.
 #'     \item `contrast_ratio`: Numeric contrast ratio between the two colors.
 #'     \item `deltaE`: Numeric DeltaE value representing perceptual color difference.
+#'     \item `L_1`: Lightness (`L*`) of the first color.
+#'     \item `C_1`: Chroma (`C*`) of the first color.
+#'     \item `L_2`: Lightness (`L*`) of the second color.
+#'     \item `C_2`: Chroma (`C*`) of the second color.
 #'   }
 #'   Returns `NULL` if the resulting palette has fewer than 2 colors.
 #'
@@ -127,6 +131,15 @@ convert_hex2Lab <- function(hex, white_point = "D65") {
 #'   the native white point of sRGB hex codes.
 #' - Use `"D50"` if comparing against print standards or physical swatches under
 #'   standard lighting conditions.
+#'
+#' **Lightness and Chroma (returned as columns):**
+#' - `L*` (lightness): how light or dark a color appears, on a scale from 0 (black)
+#'   to 100 (white). A color with a high L* value (e.g., > 80) will look very pale
+#'   and may be hard to read against a white background.
+#' - `C*` (chroma): how "intense" or "vivid" a color appears. A value of 0 means
+#'   the color is a shade of gray; higher values mean a more saturated, vivid color.
+#'   For example, a pale pastel (e.g., light pink) has low chroma, while a
+#'   bold/saturated red (e.g., fire-engine red) has high chroma.
 #'
 #' @examplesIf .has_packages(c("colorspace", "spacesXYZ"))
 #' # Define a simple palette
@@ -163,9 +176,7 @@ analyze_palette <- function(pal,
     backgrounds_to_add <- std_backgrounds[!std_backgrounds %in% pal]
 
     # Append only the missing backgrounds
-    if (length(backgrounds_to_add) > 0) {
-      pal <- c(pal, backgrounds_to_add)
-    }
+    if (length(backgrounds_to_add) > 0) pal <- c(pal, backgrounds_to_add)
   }
 
   n <- length(pal)
@@ -174,6 +185,14 @@ analyze_palette <- function(pal,
   if (n < 2) {
     return(NULL)
   }
+
+  # Convert only unique colors to Lab once for efficiency
+  unique_hex <- unique(pal)
+  lab_mat <- convert_hex2Lab(unique_hex, white_point = white_point)
+
+  # Per-color L* and C*
+  L_star <- lab_mat[, "L"]
+  C_star <- sqrt(lab_mat[, "a"]^2 + lab_mat[, "b"]^2)
 
   # Generate all unique pairs of indices
   idx <- utils::combn(n, 2)
@@ -187,9 +206,6 @@ analyze_palette <- function(pal,
   cr_vals <- colorspace::contrast_ratio(col1_hex, col2_hex)
 
   # Calculate DeltaE values
-  # Convert only unique colors to Lab once for efficiency
-  unique_hex <- unique(pal)
-  lab_mat <- convert_hex2Lab(unique_hex, white_point = white_point)
 
   # Map pair indices to Lab coordinates
   # drop = FALSE ensures matrix structure is kept even if only 1 row
@@ -204,6 +220,10 @@ analyze_palette <- function(pal,
     Col_2 = col2_hex,
     contrast_ratio = cr_vals,
     deltaE = de_vals,
+    L_1 = L_star[col1_hex],
+    C_1 = C_star[col1_hex],
+    L_2 = L_star[col2_hex],
+    C_2 = C_star[col2_hex],
     stringsAsFactors = FALSE
   )
 }

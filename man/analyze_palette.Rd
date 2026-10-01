@@ -33,13 +33,17 @@ A \code{data.frame} with the following columns:
 \item \code{Col_2}: Hex code of the second color in the pair.
 \item \code{contrast_ratio}: Numeric contrast ratio between the two colors.
 \item \code{deltaE}: Numeric DeltaE value representing perceptual color difference.
+\item \code{L_1}: Lightness (\verb{L*}) of the first color.
+\item \code{C_1}: Chroma (\verb{C*}) of the first color.
+\item \code{L_2}: Lightness (\verb{L*}) of the second color.
+\item \code{C_2}: Chroma (\verb{C*}) of the second color.
 }
 Returns \code{NULL} if the resulting palette has fewer than 2 colors.
 }
 \description{
 Calculates pairwise color differences for a given palette using contrast ratio
-and DeltaE metrics. This function generates all unique pairs of colors in the
-input palette and computes perceptual differences and accessibility contrast.
+and DeltaE metrics. All unique pairs of colors in the input palette are
+generated and their perceptual differences and accessibility contrast computed.
 }
 \details{
 The function relies on the \code{colorspace} package for contrast ratios and
@@ -53,6 +57,17 @@ black and white backgrounds are added unless they already exist in the palette
 the native white point of sRGB hex codes.
 \item Use \code{"D50"} if comparing against print standards or physical swatches under
 standard lighting conditions.
+}
+
+\strong{Lightness and Chroma (returned as columns):}
+\itemize{
+\item \verb{L*} (lightness): how light or dark a color appears, on a scale from 0 (black)
+to 100 (white). A color with a high L* value (e.g., > 80) will look very pale
+and may be hard to read against a white background.
+\item \verb{C*} (chroma): how "intense" or "vivid" a color appears. A value of 0 means
+the color is a shade of gray; higher values mean a more saturated, vivid color.
+For example, a pale pastel (e.g., light pink) has low chroma, while a
+bold/saturated red (e.g., fire-engine red) has high chroma.
 }
 }
 \examples{

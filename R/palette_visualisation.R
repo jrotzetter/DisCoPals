@@ -143,6 +143,7 @@ plot_combinations <- function(combinations, pairs_subset = NULL, separation_thre
         contrast_ratio = as.character(round(.data$contrast_ratio, 3)),
         deltaE = as.character(round(.data$deltaE, 3))
       ) |>
+      dplyr::select(.data$pair, .data$Col_1, .data$Col_2, .data$contrast_ratio, .data$deltaE) |>
       tidyr::pivot_longer(!.data$pair, names_to = "category", values_to = "hex") |>
       dplyr::mutate(
         cell_text = .data$hex,
