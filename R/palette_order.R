@@ -97,6 +97,8 @@ sort_palette <- function(pal,
 #'
 #' @param pal `Character` vector of hex color values (e.g., `"#FF5733"`).
 #'   Must not contain `NA` values.
+#' @param dedup `Logical`. If `TRUE` (default), duplicate hex values are removed
+#'   (keeping the first occurrence) before reordering.
 #'
 #' @return A `character` vector of hex colors, reordered so that adjacent
 #'   colors are perceptually distant from one another.
@@ -119,7 +121,7 @@ sort_palette <- function(pal,
 #' @seealso [sort_palette()]
 #'
 #' @export
-scatter_palette <- function(pal) {
+scatter_palette <- function(pal, dedup = TRUE) {
   if (!is.character(pal) || any(is.na(pal))) {
     stop("Argument 'pal' must be a character vector without NA values.", call. = FALSE)
   }
@@ -128,6 +130,7 @@ scatter_palette <- function(pal) {
       call. = FALSE
     )
   }
+  if (dedup) pal <- pal[!duplicated(pal)]
   n <- length(pal)
   if (n <= 2) {
     return(pal)

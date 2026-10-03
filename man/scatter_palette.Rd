@@ -4,11 +4,14 @@
 \alias{scatter_palette}
 \title{Scatter a color palette to maximize adjacent perceptual distance}
 \usage{
-scatter_palette(pal)
+scatter_palette(pal, dedup = TRUE)
 }
 \arguments{
 \item{pal}{\code{Character} vector of hex color values (e.g., \code{"#FF5733"}).
 Must not contain \code{NA} values.}
+
+\item{dedup}{\code{Logical}. If \code{TRUE} (default), duplicate hex values are removed
+(keeping the first occurrence) before reordering.}
 }
 \value{
 A \code{character} vector of hex colors, reordered so that adjacent
