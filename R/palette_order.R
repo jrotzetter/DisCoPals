@@ -85,3 +85,83 @@ sort_palette <- function(pal,
 
   pal[ord]
 }
+
+
+#' Scatter a color palette to maximize adjacent perceptual distance
+#'
+#' Reorders a vector of hex colors so that each color is as far as possible
+#' (in CIELAB space) from the color immediately preceding it. The algorithm
+#' starts at the maximin point (the color whose nearest neighbor is the
+#' farthest away) and then greedily picks, at each step, the unvisited color
+#' that is farthest from the current one.
+#'
+#' @param pal `Character` vector of hex color values (e.g., `"#FF5733"`).
+#'   Must not contain `NA` values.
+#'
+#' @return A `character` vector of hex colors, reordered so that adjacent
+#'   colors are perceptually distant from one another.
+#'
+#' @details
+#'   This is a greedy heuristic. The result is not guaranteed to maximize the
+#'   minimum adjacent distance globally, but in practice should produce
+#'   well-spread palettes.
+#'
+#'   Distance is measured as Euclidean distance in CIELAB space (CIE76,
+#'   \eqn{\Delta E^*_{ab}}). CIEDE2000 (\eqn{\Delta E_{00}}) is the current
+#'   CIE-recommended metric and correlates more closely with perceived
+#'   differences, particularly in the blue region. However, for the purpose of
+#'   spreading well-separated colors, CIE76 is a reasonable approximation.
+#'
+#' @examples
+#' pal <- c("#FF0000", "#CC0000", "#0000FF", "#0000CC", "#FFFF00")
+#' scatter_palette(pal)
+#'
+#' @seealso [sort_palette()]
+#'
+#' @export
+scatter_palette <- function(pal) {
+  if (!is.character(pal) || any(is.na(pal))) {
+    stop("Argument 'pal' must be a character vector without NA values.", call. = FALSE)
+  }
+  if (!all(grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", pal))) {
+    stop("Argument 'pal' must contain valid hex color values (e.g., \"#FF5733\").",
+      call. = FALSE
+    )
+  }
+  n <- length(pal)
+  if (n <= 2) {
+    return(pal)
+  }
+
+  lab <- convert_hex2Lab(pal)
+  d <- as.matrix(stats::dist(lab, method = "euclidean"))
+
+  # For each color, find its distance to the nearest neighbor (row min)
+  # Start at the color whose nearest neighbor is farthest away, this is the
+  # "most isolated" color
+  current <- which.max(apply(d, 1, min))
+
+  used <- rep(FALSE, n)
+  used[current] <- TRUE
+
+  visited <- integer(n)
+  visited[1] <- current
+
+  # At each step, pick the unvisited color farthest from the current one
+  for (i in 2:n) {
+    d_row <- d[current, ]
+
+    # Mask out already-visited indices so they can never be picked.
+    # -Inf ensures which.max ignores them even if all remaining
+    # distances are 0 (e.g., duplicate colors).
+    d_row[used] <- -Inf
+
+    next_i <- which.max(d_row)
+
+    used[next_i] <- TRUE
+    visited[i] <- next_i
+    current <- next_i
+  }
+
+  pal[visited]
+}
