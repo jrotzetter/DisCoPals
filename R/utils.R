@@ -137,6 +137,9 @@ convert_hex2Lab <- function(hex, white_point = "D65") {
   if (!is.character(hex) || any(is.na(hex))) {
     stop("Argument 'hex' must be a character vector without NA values.", call. = FALSE)
   }
+  if (!all(grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", hex))) {
+    stop("Argument 'hex' must contain valid hex color values (e.g., \"#FF5733\").")
+  }
   if (!is.character(white_point) || length(white_point) != 1) {
     stop("Argument 'white_point' must be a single character string.", call. = FALSE)
   }
