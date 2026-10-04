@@ -41,9 +41,13 @@ components**:
   appear to the human eye.
 - **Contrast Ratio Analysis**: Compute WCAG-compliant contrast ratios to
   ensure text and UI elements are readable.
-- **Palette Filtering**: Automatically subset color palettes based on
-  minimum perceptual distance and contrast thresholds, ensuring every
-  retained color is distinct enough from all others.
+- **Palette Filtering**: Subset color palettes based on minimum
+  perceptual distance (DeltaE), contrast ratio, maximum lightness,
+  and/or minimum chroma, ensuring every retained color is distinct
+  enough from all others, not too pale, and not too gray.
+- **Palette Reordering**: Scatter a color palette to maximize adjacent
+  perceptual distance or sort it by perceptual attribute (hue,
+  lightness, chroma, warmth, saturation).
 - **Visualization**: Display palettes as barplots or grids, and
   visualize pairwise comparison metrics in labeled swatch grids.
 - **Workflow Utilities**: Copy palettes directly to the clipboard for
