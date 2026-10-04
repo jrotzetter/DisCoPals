@@ -40,7 +40,8 @@ achromatic and placed last when sorting by \code{"hue"}. The \code{decreasing} a
 does not affect this placement. Default: 1.}
 }
 \value{
-A \code{character} vector of hex colors, reordered according to \code{by}.
+A \code{character} vector of hex colors (duplicates removed),
+reordered according to \code{by}.
 }
 \description{
 Sorts a vector of hex colors by a perceptual attribute computed in
@@ -49,6 +50,8 @@ to 0°--360° and sorted linearly. The result is a linear unwrapping of the
 color wheel with a seam at red (0°/360°).
 Near-gray colors (chroma < \code{gray_threshold}) are treated as having no hue and
 are placed last when sorting by \code{"hue"}.
+Duplicate hex values are removed (keeping the first occurrence) before
+sorting.
 }
 \examples{
 pal <- c("#FF5733", "#33FF57", "#3357FF", "#FF3357")

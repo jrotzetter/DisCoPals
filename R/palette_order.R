@@ -6,6 +6,8 @@
 #' color wheel with a seam at red (0°/360°).
 #' Near-gray colors (chroma < `gray_threshold`) are treated as having no hue and
 #' are placed last when sorting by `"hue"`.
+#' Duplicate hex values are removed (keeping the first occurrence) before
+#' sorting.
 #'
 #' @param pal `Character` vector of hex color values (e.g., `"#FF5733"`).
 #'   Must not contain `NA` values.
@@ -31,7 +33,8 @@
 #'   achromatic and placed last when sorting by `"hue"`. The `decreasing` argument
 #'   does not affect this placement. Default: 1.
 #'
-#' @return A `character` vector of hex colors, reordered according to `by`.
+#' @return A `character` vector of hex colors (duplicates removed),
+#'   reordered according to `by`.
 #'
 #' @examples
 #' pal <- c("#FF5733", "#33FF57", "#3357FF", "#FF3357")
@@ -54,7 +57,10 @@ sort_palette <- function(pal,
       call. = FALSE
     )
   }
-  if (length(pal) == 0) {
+
+  pal <- pal[!duplicated(pal)]
+
+  if (length(pal) < 2) {
     return(pal)
   }
 
