@@ -93,15 +93,14 @@ sort_palette <- function(pal,
 #' (in CIELAB space) from the color immediately preceding it. The algorithm
 #' starts at the maximin point (the color whose nearest neighbor is the
 #' farthest away) and then greedily picks, at each step, the unvisited color
-#' that is farthest from the current one.
+#' that is farthest from the current one. Duplicate hex values are removed
+#' (keeping the first occurrence) before reordering.
 #'
 #' @param pal `Character` vector of hex color values (e.g., `"#FF5733"`).
 #'   Must not contain `NA` values.
-#' @param dedup `Logical`. If `TRUE` (default), duplicate hex values are removed
-#'   (keeping the first occurrence) before reordering.
 #'
-#' @return A `character` vector of hex colors, reordered so that adjacent
-#'   colors are perceptually distant from one another.
+#' @return A `character` vector of hex colors (duplicates removed), reordered
+#'   so that adjacent colors are perceptually distant from one another.
 #'
 #' @details
 #'   This is a greedy heuristic. The result is not guaranteed to maximize the
@@ -121,7 +120,7 @@ sort_palette <- function(pal,
 #' @seealso [sort_palette()]
 #'
 #' @export
-scatter_palette <- function(pal, dedup = TRUE) {
+scatter_palette <- function(pal) {
   if (!is.character(pal) || any(is.na(pal))) {
     stop("Argument 'pal' must be a character vector without NA values.", call. = FALSE)
   }
@@ -130,7 +129,9 @@ scatter_palette <- function(pal, dedup = TRUE) {
       call. = FALSE
     )
   }
-  if (dedup) pal <- pal[!duplicated(pal)]
+
+  pal <- pal[!duplicated(pal)]
+
   n <- length(pal)
   if (n <= 2) {
     return(pal)
@@ -155,8 +156,6 @@ scatter_palette <- function(pal, dedup = TRUE) {
     d_row <- d[current, ]
 
     # Mask out already-visited indices so they can never be picked.
-    # -Inf ensures which.max ignores them even if all remaining
-    # distances are 0 (e.g., duplicate colors).
     d_row[used] <- -Inf
 
     next_i <- which.max(d_row)

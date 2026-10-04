@@ -4,25 +4,23 @@
 \alias{scatter_palette}
 \title{Scatter a color palette to maximize adjacent perceptual distance}
 \usage{
-scatter_palette(pal, dedup = TRUE)
+scatter_palette(pal)
 }
 \arguments{
 \item{pal}{\code{Character} vector of hex color values (e.g., \code{"#FF5733"}).
 Must not contain \code{NA} values.}
-
-\item{dedup}{\code{Logical}. If \code{TRUE} (default), duplicate hex values are removed
-(keeping the first occurrence) before reordering.}
 }
 \value{
-A \code{character} vector of hex colors, reordered so that adjacent
-colors are perceptually distant from one another.
+A \code{character} vector of hex colors (duplicates removed), reordered
+so that adjacent colors are perceptually distant from one another.
 }
 \description{
 Reorders a vector of hex colors so that each color is as far as possible
 (in CIELAB space) from the color immediately preceding it. The algorithm
 starts at the maximin point (the color whose nearest neighbor is the
 farthest away) and then greedily picks, at each step, the unvisited color
-that is farthest from the current one.
+that is farthest from the current one. Duplicate hex values are removed
+(keeping the first occurrence) before reordering.
 }
 \details{
 This is a greedy heuristic. The result is not guaranteed to maximize the
