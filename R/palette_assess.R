@@ -137,6 +137,83 @@ analyze_palette <- function(pal,
 }
 
 
+#' Compute perceptual attributes for a color palette
+#'
+#' Converts a vector of hex colors to CIELAB space and returns a `data.frame`
+#' with hue, lightness, chroma, warmth, and saturation for each color.
+#' Duplicate hex values are removed (keeping the first occurrence).
+#'
+#' @param pal `Character` vector of hex color values (e.g., `"#FF5733"`).
+#'   Must not contain `NA` values.
+#' @param plot `Logical`. If `TRUE`, a swatch grid visualizing the attributes
+#'   is printed. Default: `FALSE`.
+#'
+#' @return A `data.frame` with columns:
+#'   \describe{
+#'     \item{`color`}{Hex string.}
+#'     \item{`hue`}{Hue angle (degrees, 0–360).}
+#'     \item{`L`}{Lightness (\eqn{L^*}).}
+#'     \item{`C`}{Chroma (\eqn{C^* = \sqrt{a^{*2} + b^{*2}}}).}
+#'     \item{`warmth`}{Warm–cool index (\eqn{a^* + b^*}), approximating
+#'       a projection onto the warm–cool axis (orange ↔ cyan) in the
+#'       \eqn{a^*b^*} plane. Higher values = warmer (reds, oranges, yellows);
+#'       lower values = cooler (greens, blues, cyans). Note: this
+#'       conflates hue direction with chroma, so a highly saturated
+#'       green will be "cooler" than a desaturated blue.}
+#'     \item{`S`}{Richter/Lübbe saturation (\eqn{C^* / \sqrt{C^{*2} + L^{*2}}}).
+#'       Measures how chromatic the color appears relative to its brightness.
+#'       Ranges from 0 (achromatic) approaching 1 for highly chromatic colors
+#'       at low lightness.}
+#'   }
+#'
+#' @examples
+#' pal <- c("#FF5733", "#33FF57", "#3357FF", "#FF3357")
+#' color_attributes(pal)
+#'
+#' @export
+color_attributes <- function(pal, plot = FALSE) {
+  if (!is.character(pal) || any(is.na(pal))) {
+    stop("Argument 'pal' must be a character vector without NA values.", call. = FALSE)
+  }
+  if (!all(grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", pal))) {
+    stop("Argument 'pal' must contain valid hex color values (e.g., \"#FF5733\").",
+      call. = FALSE
+    )
+  }
+  if (!is.logical(plot) || length(plot) != 1 || is.na(plot)) {
+    stop("Argument 'plot' must be a single non-NA logical value.", call. = FALSE)
+  }
+
+  pal <- pal[!duplicated(pal)]
+
+  lab <- convert_hex2Lab(pal)
+  chroma <- sqrt(lab[, "a"]^2 + lab[, "b"]^2)
+  hue <- atan2(lab[, "b"], lab[, "a"]) * 180 / pi
+  hue[hue < 0] <- hue[hue < 0] + 360
+
+  warmth <- lab[, "a"] + lab[, "b"]
+
+  denom <- sqrt(chroma^2 + lab[, "L"]^2)
+  S <- ifelse(denom > 0, chroma / denom, 0)
+
+  out <- data.frame(
+    color = pal,
+    hue = hue,
+    lightness = lab[, "L"],
+    chroma = chroma,
+    warmth = warmth,
+    saturation = S,
+    stringsAsFactors = FALSE
+  )
+
+  if (plot) {
+    print(plot_color_attributes(out))
+  }
+
+  out
+}
+
+
 #' Filter a color palette based on perceptual distance, contrast, lightness, and chroma
 #'
 #' Filters a vector of color hex codes, retaining only those colors whose
