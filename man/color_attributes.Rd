@@ -16,6 +16,7 @@ is printed. Default: \code{FALSE}.}
 \value{
 A \code{data.frame} with columns:
 \describe{
+\item{\code{index}}{Row index.}
 \item{\code{color}}{Hex string.}
 \item{\code{hue}}{Hue angle (degrees, 0–360).}
 \item{\code{L}}{Lightness (\eqn{L^*}).}

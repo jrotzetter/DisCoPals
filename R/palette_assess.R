@@ -150,6 +150,7 @@ analyze_palette <- function(pal,
 #'
 #' @return A `data.frame` with columns:
 #'   \describe{
+#'     \item{`index`}{Row index.}
 #'     \item{`color`}{Hex string.}
 #'     \item{`hue`}{Hue angle (degrees, 0–360).}
 #'     \item{`L`}{Lightness (\eqn{L^*}).}
@@ -184,7 +185,15 @@ color_attributes <- function(pal, plot = FALSE) {
     stop("Argument 'plot' must be a single non-NA logical value.", call. = FALSE)
   }
 
-  pal <- pal[!duplicated(pal)]
+  dup_idx <- which(duplicated(pal))
+  if (length(dup_idx) > 0) {
+    msg <- paste0(
+      "Dropped ", length(dup_idx), " duplicate(s): ",
+      paste0(pal[dup_idx], " (pos ", dup_idx, ")", collapse = ", ")
+    )
+    message(msg)
+    pal <- pal[-dup_idx]
+  }
 
   lab <- convert_hex2Lab(pal)
   chroma <- sqrt(lab[, "a"]^2 + lab[, "b"]^2)
@@ -197,6 +206,7 @@ color_attributes <- function(pal, plot = FALSE) {
   S <- ifelse(denom > 0, chroma / denom, 0)
 
   out <- data.frame(
+    index = seq_len(length(pal)),
     color = pal,
     hue = hue,
     lightness = lab[, "L"],
