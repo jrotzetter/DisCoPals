@@ -7,8 +7,8 @@
 plot_color_attributes(df)
 }
 \arguments{
-\item{df}{A \code{data.frame} with columns: \code{color}, \code{hue}, \code{lightness},
-\code{chroma}, \code{warmth}, \code{saturation}. Typically the return value of
+\item{df}{A \code{data.frame} with columns: \code{index}, \code{color}, \code{hue}, \code{lightness},
+\code{chroma}, \code{warmth}, and \code{saturation}. Typically the return value of
 \code{\link[=color_attributes]{color_attributes()}}.}
 }
 \value{

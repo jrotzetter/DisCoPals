@@ -196,8 +196,8 @@ plot_combinations <- function(combinations, pairs_subset = NULL, separation_thre
 #' columns show the swatch alongside its hue, lightness, chroma, warmth, and
 #' saturation values.
 #'
-#' @param df A `data.frame` with columns: `color`, `hue`, `lightness`,
-#'   `chroma`, `warmth`, `saturation`. Typically the return value of
+#' @param df A `data.frame` with columns: `index`, `color`, `hue`, `lightness`,
+#'   `chroma`, `warmth`, and `saturation`. Typically the return value of
 #'   [color_attributes()].
 #'
 #' @return A `ggplot` object.
@@ -212,7 +212,7 @@ plot_combinations <- function(combinations, pairs_subset = NULL, separation_thre
 plot_color_attributes <- function(df) {
   .require_packages(c("tibble", "dplyr", "tidyr", "ggplot2", "forcats", "ggtext"))
 
-  required_cols <- c("color", "hue", "lightness", "chroma", "warmth", "saturation")
+  required_cols <- c("index", "color", "hue", "lightness", "chroma", "warmth", "saturation")
   if (!all(required_cols %in% names(df))) {
     stop("df must include columns: ",
       paste(required_cols, collapse = ", "),
@@ -224,7 +224,7 @@ plot_color_attributes <- function(df) {
     return(invisible(NULL))
   }
 
-  .text_color <- function(hex) {
+  .determine_text_color <- function(hex) {
     if (!grepl("^#[0-9A-Fa-f]{6}$", hex)) {
       return(NA_character_)
     }
@@ -234,41 +234,41 @@ plot_color_attributes <- function(df) {
     r <- strtoi(substr(hex, 1, 2), 16L) / 255
     g <- strtoi(substr(hex, 3, 4), 16L) / 255
     b <- strtoi(substr(hex, 5, 6), 16L) / 255
+    # BT.601 luma: Y' = 0.299R' + 0.587G' + 0.114B'.
+    # Threshold 0.5: above -> light background -> black text, else white.
     ifelse(0.299 * r + 0.587 * g + 0.114 * b > 0.5, "black", "white")
   }
 
-  df |>
+  df <- df |>
     tibble::as_tibble() |>
-    dplyr::mutate(index = seq_len(dplyr::n())) |>
     dplyr::mutate(
       hue = round(.data$hue, 1),
       lightness = round(.data$lightness, 1),
       chroma = round(.data$chroma, 1),
       warmth = round(.data$warmth, 1),
-      saturation = round(.data$saturation, 3)
-    ) |>
+      saturation = round(.data$saturation, 3),
+      cell_color = "#FFFFFF",
+      text_color = "#000000"
+    )
+
+  df |>
     tidyr::pivot_longer(
-      cols = dplyr::all_of(setdiff(required_cols, "color")),
+      cols = dplyr::all_of(setdiff(required_cols, c("index", "color"))),
       names_to = "category", values_to = "value"
     ) |>
-    dplyr::mutate(
-      value = as.character(.data$value)
-    ) |>
+    dplyr::mutate(value = as.character(.data$value)) |>
     dplyr::bind_rows(
       tibble::tibble(
-        index = seq_len(nrow(df)),
+        index = df$index,
         color = df$color,
         category = "color",
-        value = df$color
+        value = df$color,
+        cell_color = df$color,
+        text_color = vapply(df$color, .determine_text_color, character(1L))
       )
     ) |>
     dplyr::mutate(
-      category = factor(.data$category, levels = required_cols),
-      hex = ifelse(.data$category == "color", .data$value, "#FFFFFF"),
-      text_col = ifelse(.data$category == "color",
-        vapply(.data$value, .text_color, character(1L)),
-        "black"
-      ),
+      category = factor(.data$category, levels = setdiff(required_cols, "index")),
       index = factor(.data$index)
     ) |>
     ggplot2::ggplot(
@@ -277,9 +277,9 @@ plot_color_attributes <- function(df) {
         y = forcats::fct_rev(.data$index)
       )
     ) +
-    ggplot2::geom_tile(ggplot2::aes(fill = .data$hex), colour = "grey50") +
+    ggplot2::geom_tile(ggplot2::aes(fill = .data$cell_color), colour = "grey50") +
     ggplot2::scale_fill_identity() +
-    ggplot2::geom_text(ggplot2::aes(label = .data$value, color = .data$text_col), size = 4) +
+    ggplot2::geom_text(ggplot2::aes(label = .data$value, color = .data$text_color), size = 4) +
     ggplot2::scale_colour_identity() +
     ggplot2::labs(x = NULL, y = NULL) +
     ggplot2::scale_y_discrete(expand = c(0, 0)) +
