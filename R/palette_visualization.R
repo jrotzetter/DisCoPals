@@ -225,12 +225,15 @@ plot_color_attributes <- function(df) {
   }
 
   .determine_text_color <- function(hex) {
-    if (!grepl("^#[0-9A-Fa-f]{6}$", hex)) {
+    if (!grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", hex)) {
       return(NA_character_)
     }
 
     hex <- sub("^#", "", hex)
-    if (nchar(hex) == 3) hex <- paste0(strsplit(hex, "")[[1]], strsplit(hex, "")[[1]])
+    if (nchar(hex) == 3) {
+      chars <- strsplit(hex, "")[[1]]
+      hex <- paste0(chars, chars, collapse = "")
+    }
     r <- strtoi(substr(hex, 1, 2), 16L) / 255
     g <- strtoi(substr(hex, 3, 4), 16L) / 255
     b <- strtoi(substr(hex, 5, 6), 16L) / 255
