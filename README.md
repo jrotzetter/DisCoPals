@@ -41,6 +41,9 @@ components**:
   appear to the human eye.
 - **Contrast Ratio Analysis**: Compute WCAG-compliant contrast ratios to
   ensure text and UI elements are readable.
+- **Color Attribute Inspection**: Compute per-color hue, lightness,
+  chroma, warmth, and saturation in CIELAB space, returned as a data
+  frame for downstream analysis or sorting.
 - **Palette Filtering**: Subset color palettes based on minimum
   perceptual distance (DeltaE), contrast ratio, maximum lightness,
   and/or minimum chroma, ensuring every retained color is distinct
@@ -48,10 +51,12 @@ components**:
 - **Palette Reordering**: Scatter a color palette to maximize adjacent
   perceptual distance or sort it by perceptual attribute (hue,
   lightness, chroma, warmth, saturation).
-- **Visualization**: Display palettes as barplots or grids, and
-  visualize pairwise comparison metrics in labeled swatch grids.
+- **Visualization**: Display palettes as barplots or grids, visualize
+  pairwise comparison metrics in labeled swatch grids, and render
+  per-color attribute swatch grids with hue, lightness, chroma, warmth,
+  and saturation labels.
 - **Workflow Utilities**: Copy palettes directly to the clipboard for
-  easy integration into other scripts or design tools (Only works in
+  easy integration into other scripts or design tools (only works in
   interactive R sessions).
 
 ## Installation
