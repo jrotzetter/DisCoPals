@@ -224,24 +224,6 @@ plot_color_attributes <- function(df) {
     return(invisible(NULL))
   }
 
-  .determine_text_color <- function(hex) {
-    if (!grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", hex)) {
-      return(NA_character_)
-    }
-
-    hex <- sub("^#", "", hex)
-    if (nchar(hex) == 3) {
-      chars <- strsplit(hex, "")[[1]]
-      hex <- paste0(chars, chars, collapse = "")
-    }
-    r <- strtoi(substr(hex, 1, 2), 16L) / 255
-    g <- strtoi(substr(hex, 3, 4), 16L) / 255
-    b <- strtoi(substr(hex, 5, 6), 16L) / 255
-    # BT.601 luma: Y' = 0.299R' + 0.587G' + 0.114B'.
-    # Threshold 0.5: above -> light background -> black text, else white.
-    ifelse(0.299 * r + 0.587 * g + 0.114 * b > 0.5, "black", "white")
-  }
-
   df <- df |>
     tibble::as_tibble() |>
     dplyr::mutate(
@@ -267,7 +249,7 @@ plot_color_attributes <- function(df) {
         category = "color",
         value = df$color,
         cell_color = df$color,
-        text_color = vapply(df$color, .determine_text_color, character(1L))
+        text_color = dplyr::if_else(df$lightness > 60, "#000000", "#FFFFFF")
       )
     ) |>
     dplyr::mutate(
