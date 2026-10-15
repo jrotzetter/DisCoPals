@@ -191,7 +191,7 @@ plot_combinations <- function(combinations, pairs_subset = NULL, separation_thre
 
 #' Plot color attributes as a labeled swatch grid
 #'
-#' Visualizes a color attribute data frame (as returned by [color_attributes()]
+#' Visualizes a color attribute data frame (as returned by [color_attributes()])
 #' as a grid of labeled color swatches using `ggplot2`. Each row is a color;
 #' columns show the swatch alongside its hue, lightness, chroma, warmth, and
 #' saturation values.
@@ -199,9 +199,25 @@ plot_combinations <- function(combinations, pairs_subset = NULL, separation_thre
 #' @param df A `data.frame` with columns: `index`, `color`, `hue`, `lightness`,
 #'   `chroma`, `warmth`, and `saturation`. Typically the return value of
 #'   [color_attributes()].
+#' @param max_rows `Integer`. If `nrow(df)` exceeds this value, the
+#'   data is split into sequential subsets of at most this many rows, each
+#'   plotted in turn. The original `index` values are preserved.
+#'   Default: `Inf` (no splitting).
+#' @param return_list `Logical`. If `TRUE` and splitting occurs, a list of
+#'   `ggplot` objects is returned instead of printing. Ignored when no
+#'   splitting occurs (a single `ggplot` is always returned in that case).
+#'   Default: `FALSE`.
 #'
-#' @return A `ggplot` object.
-#' @export
+#' @return
+#' \itemize{
+#'   \item If `nrow(df) <= max_rows`: a single `ggplot` object.
+#'   \item If splitting occurs and `return_list = FALSE`: each plot is printed
+#'     to the active graphics device; `NULL` is returned invisibly.
+#'   \item If splitting occurs and `return_list = TRUE`: a named list of
+#'     `ggplot` objects, one per subset. Names are of the form
+#'     `"r<start>-r<end>"` (e.g. `"r1-r50"`, `"r51-r100"`), indicating the
+#'     row range of `df` in each chunk.
+#' }
 #'
 #' @seealso [color_attributes()]
 #'
@@ -209,7 +225,15 @@ plot_combinations <- function(combinations, pairs_subset = NULL, separation_thre
 #' pal <- c("#FF5733", "#33FF57", "#3357FF", "#FF3357")
 #' plot_color_attributes(color_attributes(pal))
 #'
-plot_color_attributes <- function(df) {
+#' # Split into subsets of 2, collect as a list
+#' plots <- plot_color_attributes(
+#'   color_attributes(pal),
+#'   max_rows = 2,
+#'   return_list = TRUE
+#' )
+#'
+#' @export
+plot_color_attributes <- function(df, max_rows = Inf, return_list = FALSE) {
   .require_packages(c("tibble", "dplyr", "tidyr", "ggplot2", "forcats", "ggtext"))
 
   required_cols <- c("index", "color", "hue", "lightness", "chroma", "warmth", "saturation")
@@ -224,57 +248,82 @@ plot_color_attributes <- function(df) {
     return(invisible(NULL))
   }
 
-  df <- df |>
-    tibble::as_tibble() |>
-    dplyr::mutate(
-      hue = round(.data$hue, 1),
-      lightness = round(.data$lightness, 1),
-      chroma = round(.data$chroma, 1),
-      warmth = round(.data$warmth, 1),
-      saturation = round(.data$saturation, 3),
-      cell_color = "#FFFFFF",
-      text_color = "#000000"
+  .build_plot <- function(chunk) {
+    chunk <- chunk |>
+      dplyr::mutate(
+        hue = round(.data$hue, 1),
+        lightness = round(.data$lightness, 1),
+        chroma = round(.data$chroma, 1),
+        warmth = round(.data$warmth, 1),
+        saturation = round(.data$saturation, 3)
+      )
+
+    color_rows <- tibble::tibble(
+      index = chunk$index,
+      color = chunk$color,
+      category = "color",
+      value = chunk$color,
+      cell_color = chunk$color,
+      text_color = dplyr::if_else(chunk$lightness > 60, "#000000", "#FFFFFF")
     )
 
-  df |>
-    tidyr::pivot_longer(
-      cols = dplyr::all_of(setdiff(required_cols, c("index", "color"))),
-      names_to = "category", values_to = "value"
-    ) |>
-    dplyr::mutate(value = as.character(.data$value)) |>
-    dplyr::bind_rows(
-      tibble::tibble(
-        index = df$index,
-        color = df$color,
-        category = "color",
-        value = df$color,
-        cell_color = df$color,
-        text_color = dplyr::if_else(df$lightness > 60, "#000000", "#FFFFFF")
+    chunk |>
+      tidyr::pivot_longer(
+        cols = dplyr::all_of(setdiff(required_cols, c("index", "color"))),
+        names_to = "category", values_to = "value"
+      ) |>
+      dplyr::mutate(value = as.character(.data$value)) |>
+      dplyr::bind_rows(color_rows) |>
+      dplyr::mutate(
+        cell_color = dplyr::if_else(is.na(.data$cell_color), "#FFFFFF", .data$cell_color),
+        text_color = dplyr::if_else(is.na(.data$text_color), "#000000", .data$text_color),
+        category = factor(.data$category, levels = setdiff(required_cols, "index")),
+        index = factor(.data$index)
+      ) |>
+      dplyr::select(-.data$color) |>
+      ggplot2::ggplot(
+        ggplot2::aes(
+          x = .data$category,
+          y = forcats::fct_rev(.data$index)
+        )
+      ) +
+      ggplot2::geom_tile(ggplot2::aes(fill = .data$cell_color), colour = "grey50") +
+      ggplot2::scale_fill_identity() +
+      ggplot2::geom_text(ggplot2::aes(label = .data$value, color = .data$text_color), size = 4) +
+      ggplot2::scale_colour_identity() +
+      ggplot2::labs(x = NULL, y = NULL) +
+      ggplot2::scale_y_discrete(expand = c(0, 0)) +
+      ggplot2::scale_x_discrete(expand = c(0, 0), position = "top", labels = ~ paste0("**", .x, "**")) +
+      ggplot2::theme(
+        axis.text.x.top = ggtext::element_markdown(size = 10, margin = ggplot2::margin(b = 4.95)),
+        axis.text.y.left = ggplot2::element_text(margin = ggplot2::margin(r = 4.95)),
+        axis.line = ggplot2::element_blank(),
+        axis.ticks = ggplot2::element_blank()
       )
-    ) |>
-    dplyr::mutate(
-      category = factor(.data$category, levels = setdiff(required_cols, "index")),
-      index = factor(.data$index)
-    ) |>
-    ggplot2::ggplot(
-      ggplot2::aes(
-        x = .data$category,
-        y = forcats::fct_rev(.data$index)
-      )
-    ) +
-    ggplot2::geom_tile(ggplot2::aes(fill = .data$cell_color), colour = "grey50") +
-    ggplot2::scale_fill_identity() +
-    ggplot2::geom_text(ggplot2::aes(label = .data$value, color = .data$text_color), size = 4) +
-    ggplot2::scale_colour_identity() +
-    ggplot2::labs(x = NULL, y = NULL) +
-    ggplot2::scale_y_discrete(expand = c(0, 0)) +
-    ggplot2::scale_x_discrete(expand = c(0, 0), position = "top", labels = ~ paste0("**", .x, "**")) +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(
-      axis.text.x.top = ggtext::element_markdown(
-        size = 10
-      ),
-      axis.line = ggplot2::element_blank(),
-      axis.ticks = ggplot2::element_blank(),
-    )
+  }
+
+  df <- tibble::as_tibble(df)
+
+  if (nrow(df) <= max_rows) {
+    return(.build_plot(df))
+  }
+
+  n <- nrow(df)
+  starts <- seq(1, n, by = max_rows)
+  ends <- pmin(starts + max_rows - 1L, n)
+  nm <- paste0("r", df$index[starts], "-r", df$index[ends])
+
+  if (return_list) {
+    plots <- lapply(seq_along(starts), function(i) {
+      .build_plot(df[starts[i]:ends[i], ])
+    })
+    names(plots) <- nm
+    return(plots)
+  }
+
+  for (start in starts) {
+    end <- min(start + max_rows - 1L, n)
+    print(.build_plot(df[start:end, ]))
+  }
+  invisible(NULL)
 }

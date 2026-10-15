@@ -4,18 +4,36 @@
 \alias{plot_color_attributes}
 \title{Plot color attributes as a labeled swatch grid}
 \usage{
-plot_color_attributes(df)
+plot_color_attributes(df, max_rows = Inf, return_list = FALSE)
 }
 \arguments{
 \item{df}{A \code{data.frame} with columns: \code{index}, \code{color}, \code{hue}, \code{lightness},
 \code{chroma}, \code{warmth}, and \code{saturation}. Typically the return value of
 \code{\link[=color_attributes]{color_attributes()}}.}
+
+\item{max_rows}{\code{Integer}. If \code{nrow(df)} exceeds this value, the
+data is split into sequential subsets of at most this many rows, each
+plotted in turn. The original \code{index} values are preserved.
+Default: \code{Inf} (no splitting).}
+
+\item{return_list}{\code{Logical}. If \code{TRUE} and splitting occurs, a list of
+\code{ggplot} objects is returned instead of printing. Ignored when no
+splitting occurs (a single \code{ggplot} is always returned in that case).
+Default: \code{FALSE}.}
 }
 \value{
-A \code{ggplot} object.
+\itemize{
+\item If \code{nrow(df) <= max_rows}: a single \code{ggplot} object.
+\item If splitting occurs and \code{return_list = FALSE}: each plot is printed
+to the active graphics device; \code{NULL} is returned invisibly.
+\item If splitting occurs and \code{return_list = TRUE}: a named list of
+\code{ggplot} objects, one per subset. Names are of the form
+\code{"r<start>-r<end>"} (e.g. \code{"r1-r50"}, \code{"r51-r100"}), indicating the
+row range of \code{df} in each chunk.
+}
 }
 \description{
-Visualizes a color attribute data frame (as returned by \code{\link[=color_attributes]{color_attributes()}}
+Visualizes a color attribute data frame (as returned by \code{\link[=color_attributes]{color_attributes()}})
 as a grid of labeled color swatches using \code{ggplot2}. Each row is a color;
 columns show the swatch alongside its hue, lightness, chroma, warmth, and
 saturation values.
@@ -24,6 +42,13 @@ saturation values.
 \dontshow{if (.has_packages(c("tibble", "dplyr", "tidyr", "ggplot2", "forcats", "ggtext"))) withAutoprint(\{ # examplesIf}
 pal <- c("#FF5733", "#33FF57", "#3357FF", "#FF3357")
 plot_color_attributes(color_attributes(pal))
+
+# Split into subsets of 2, collect as a list
+plots <- plot_color_attributes(
+  color_attributes(pal),
+  max_rows = 2,
+  return_list = TRUE
+)
 \dontshow{\}) # examplesIf}
 }
 \seealso{

@@ -147,6 +147,9 @@ analyze_palette <- function(pal,
 #'   Must not contain `NA` values.
 #' @param plot `Logical`. If `TRUE`, a swatch grid visualizing the attributes
 #'   is printed. Default: `FALSE`.
+#' @param max_rows `Integer`. If the number of colors exceeds this
+#'   value, the plot is split into sequential subsets of at most this many
+#'   rows. Default: `30`.
 #'
 #' @return A `data.frame` with columns:
 #'   \describe{
@@ -171,8 +174,10 @@ analyze_palette <- function(pal,
 #' pal <- c("#FF5733", "#33FF57", "#3357FF", "#FF3357")
 #' color_attributes(pal)
 #'
+#' @seealso [plot_color_attributes()]
+#'
 #' @export
-color_attributes <- function(pal, plot = FALSE) {
+color_attributes <- function(pal, plot = FALSE, max_rows = 30) {
   if (!is.character(pal) || any(is.na(pal))) {
     stop("Argument 'pal' must be a character vector without NA values.", call. = FALSE)
   }
@@ -217,7 +222,8 @@ color_attributes <- function(pal, plot = FALSE) {
   )
 
   if (plot) {
-    print(plot_color_attributes(out))
+    result <- plot_color_attributes(out, max_rows = max_rows, return_list = FALSE)
+    if (!is.null(result)) print(result)
   }
 
   out

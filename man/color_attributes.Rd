@@ -4,7 +4,7 @@
 \alias{color_attributes}
 \title{Compute perceptual attributes for a color palette}
 \usage{
-color_attributes(pal, plot = FALSE)
+color_attributes(pal, plot = FALSE, max_rows = 30)
 }
 \arguments{
 \item{pal}{\code{Character} vector of hex color values (e.g., \code{"#FF5733"}).
@@ -12,6 +12,10 @@ Must not contain \code{NA} values.}
 
 \item{plot}{\code{Logical}. If \code{TRUE}, a swatch grid visualizing the attributes
 is printed. Default: \code{FALSE}.}
+
+\item{max_rows}{\code{Integer}. If the number of colors exceeds this
+value, the plot is split into sequential subsets of at most this many
+rows. Default: \code{30}.}
 }
 \value{
 A \code{data.frame} with columns:
@@ -42,4 +46,7 @@ Duplicate hex values are removed (keeping the first occurrence).
 pal <- c("#FF5733", "#33FF57", "#3357FF", "#FF3357")
 color_attributes(pal)
 
+}
+\seealso{
+\code{\link[=plot_color_attributes]{plot_color_attributes()}}
 }
