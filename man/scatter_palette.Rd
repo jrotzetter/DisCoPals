@@ -39,5 +39,5 @@ scatter_palette(pal)
 
 }
 \seealso{
-\code{\link[=sort_palette]{sort_palette()}}
+\code{\link[=sort_by_attribute]{sort_by_attribute()}}, \code{\link[=sort_by_similarity]{sort_by_similarity()}}
 }

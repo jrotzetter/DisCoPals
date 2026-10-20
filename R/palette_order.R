@@ -36,17 +36,20 @@
 #' @return A `character` vector of hex colors (duplicates removed),
 #'   reordered according to `by`.
 #'
+#' @seealso [sort_by_similarity()] for ordering by overall perceptual
+#' similarity rather than a single attribute.
+#'
 #' @examples
 #' pal <- c("#FF5733", "#33FF57", "#3357FF", "#FF3357")
-#' sort_palette(pal, by = "hue")
-#' sort_palette(pal, by = "L", decreasing = TRUE)
-#' sort_palette(pal, by = "S")
+#' sort_by_attribute(pal, by = "hue")
+#' sort_by_attribute(pal, by = "L", decreasing = TRUE)
+#' sort_by_attribute(pal, by = "S")
 #'
 #' @export
-sort_palette <- function(pal,
-                         by = c("hue", "L", "C", "warmth", "S"),
-                         decreasing = FALSE,
-                         gray_threshold = 1) {
+sort_by_attribute <- function(pal,
+                              by = c("hue", "L", "C", "warmth", "S"),
+                              decreasing = FALSE,
+                              gray_threshold = 1) {
   by <- match.arg(by)
 
   if (!is.character(pal) || any(is.na(pal))) {
@@ -129,7 +132,7 @@ sort_palette <- function(pal,
 #'   reordered so that perceptually similar colors are adjacent.
 #'
 #' @details
-#' Unlike [sort_palette()], which sorts by a single linear attribute (hue,
+#' Unlike [sort_by_attribute()], which sorts by a single linear attribute (hue,
 #' lightness, etc.), this function uses a distance metric over the full
 #' CIELAB space (`L*, a*, b*`) simultaneously, so similar colors tend to be
 #' placed adjacent based on their overall perceptual distance rather than
@@ -140,13 +143,12 @@ sort_palette <- function(pal,
 #' Duplicate hex values are removed (keeping the first occurrence) before
 #' sorting.
 #'
-#'
 #' @examplesIf .has_packages("spacesXYZ")
 #' pal <- c("#FF5733", "#33FF57", "#3357FF", "#FF3357", "#3357FF")
 #' sort_by_similarity(pal)
 #' sort_by_similarity(pal, metric = "1994", hclust_method = "complete")
 #'
-#' @seealso [sort_palette()]
+#' @seealso [sort_by_attribute()] for ordering by a single linear attribute (hue, lightness, etc.)
 #'
 #' @export
 sort_by_similarity <- function(pal,
@@ -218,7 +220,7 @@ sort_by_similarity <- function(pal,
 #' pal <- c("#FF0000", "#CC0000", "#0000FF", "#0000CC", "#FFFF00")
 #' scatter_palette(pal)
 #'
-#' @seealso [sort_palette()]
+#' @seealso [sort_by_attribute()], [sort_by_similarity()]
 #'
 #' @export
 scatter_palette <- function(pal) {

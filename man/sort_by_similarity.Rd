@@ -49,7 +49,7 @@ in CIELAB space and reading the leaf order from a hierarchical clustering
 tree.
 }
 \details{
-Unlike \code{\link[=sort_palette]{sort_palette()}}, which sorts by a single linear attribute (hue,
+Unlike \code{\link[=sort_by_attribute]{sort_by_attribute()}}, which sorts by a single linear attribute (hue,
 lightness, etc.), this function uses a distance metric over the full
 CIELAB space (\verb{L*, a*, b*}) simultaneously, so similar colors tend to be
 placed adjacent based on their overall perceptual distance rather than
@@ -68,5 +68,5 @@ sort_by_similarity(pal, metric = "1994", hclust_method = "complete")
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[=sort_palette]{sort_palette()}}
+\code{\link[=sort_by_attribute]{sort_by_attribute()}} for ordering by a single linear attribute (hue, lightness, etc.)
 }
