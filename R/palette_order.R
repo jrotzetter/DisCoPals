@@ -93,6 +93,101 @@ sort_palette <- function(pal,
 }
 
 
+#' Sort a color palette by perceptual similarity
+#'
+#' Orders a vector of hex colors so that perceptually similar colors are
+#' adjacent. This is achieved by computing a pairwise color-difference matrix
+#' in CIELAB space and reading the leaf order from a hierarchical clustering
+#' tree.
+#'
+#' @param pal `Character` vector of hex color values (e.g., `"#FF5733"`).
+#'   Must not contain `NA` values.
+#' @param metric Color difference formula. One of:
+#'   \describe{
+#'     \item{`"2000"`}{CIEDE2000. Best perceptual accuracy of the three;
+#'        accounts for lightness, chroma, and hue dependencies.}
+#'     \item{`"1994"`}{CIE94 (symmetric, graphic-arts weighting). Intermediate
+#'       between CIE76 and CIEDE2000 in complexity and perceptual accuracy.}
+#'     \item{`"1976"`}{CIE76 (Euclidean distance in CIELAB, i.e.
+#'       \eqn{\Delta E^*_{ab}}). Simplest; least perceptually accurate,
+#'       particularly in the blue region and at low chroma.}
+#'   }
+#'   All metrics are computed via [spacesXYZ::DeltaE()].
+#' @param hclust_method Agglomeration method passed to [stats::hclust()].
+#'   One of:
+#'   \describe{
+#'     \item{`"ward.D2"`}{Ward's minimum-variance method. Produces compact,
+#'       spherical clusters. Default.}
+#'     \item{`"complete"`}{Complete (farthest-neighbor) linkage. Conservative;
+#'       sensitive to outliers, which can separate nearby sub-clusters in the
+#'       leaf order.}
+#'     \item{`"average"`}{Average (UPGMA) linkage. A middle ground between
+#'       single and complete linkage.}
+#'   }
+#'
+#' @return A `character` vector of hex colors (duplicates removed),
+#'   reordered so that perceptually similar colors are adjacent.
+#'
+#' @details
+#' Unlike [sort_palette()], which sorts by a single linear attribute (hue,
+#' lightness, etc.), this function uses a distance metric over the full
+#' CIELAB space (`L*, a*, b*`) simultaneously, so similar colors tend to be
+#' placed adjacent based on their overall perceptual distance rather than
+#' a single attribute. Note that the ordering is a best-effort approximation
+#' (leaf order is a 1-D seriation): two similar colors are not guaranteed to
+#' be adjacent, particularly with `"complete"` linkage.
+#'
+#' Duplicate hex values are removed (keeping the first occurrence) before
+#' sorting.
+#'
+#'
+#' @examplesIf .has_packages("spacesXYZ")
+#' pal <- c("#FF5733", "#33FF57", "#3357FF", "#FF3357", "#3357FF")
+#' sort_by_similarity(pal)
+#' sort_by_similarity(pal, metric = "1994", hclust_method = "complete")
+#'
+#' @seealso [sort_palette()]
+#'
+#' @export
+sort_by_similarity <- function(pal,
+                               metric = c("2000", "1994", "1976"),
+                               hclust_method = c("ward.D2", "complete", "average")) {
+  metric <- match.arg(metric)
+  hclust_method <- match.arg(hclust_method)
+
+  if (!is.character(pal) || any(is.na(pal))) {
+    stop("Argument 'pal' must be a character vector without NA values.", call. = FALSE)
+  }
+  if (!all(grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", pal))) {
+    stop("Argument 'pal' must contain valid hex color values (e.g., \"#FF5733\").",
+      call. = FALSE
+    )
+  }
+
+  pal <- pal[!duplicated(pal)]
+  if (length(pal) < 2) {
+    return(pal)
+  }
+
+  lab <- convert_hex2Lab(pal)
+
+  # Build the full pairwise distance matrix
+  n <- nrow(lab)
+  i <- rep(1:n, times = n)
+  j <- rep(1:n, each = n)
+
+  d <- matrix(spacesXYZ::DeltaE(lab[i, ], lab[j, ], metric = metric), n, n)
+
+  # NOTE: CIEDE2000 and CIE94 do not strictly satisfy the triangle
+  # inequality, so Ward's minimum-variance interpretation is
+  # approximate for these metrics (as input distances don't come
+  # from a Euclidean space). In practice this should have no visible
+  # effect on the leaf order.
+  hc <- stats::hclust(stats::as.dist(d), method = hclust_method)
+  pal[hc$order]
+}
+
+
 #' Scatter a color palette to maximize adjacent perceptual distance
 #'
 #' Reorders a vector of hex colors so that each color is as far as possible
