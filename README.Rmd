@@ -45,10 +45,7 @@ if ("Depends" %in% colnames(desc)) {
 
 ## Overview
 
-**DisCoPals** is an R package designed to help researchers, data scientists, and designers create, evaluate, and optimize color palettes for accessibility and perceptual distinctness. It combines **two core components**:
-
-1.  **Built-in Palettes**: A curated collection of ready-to-use **distinct qualitative palettes** optimized for categorical data.
-2.  **Evaluation Functions**: Functions to convert colors to the perceptually uniform CIELAB space, calculate industry-standard color difference metrics (DeltaE), measure WCAG-compliant contrast ratios, and filter palettes to ensure all colors are sufficiently distinguishable.
+**DisCoPals** is an R package designed to help researchers, data scientists, and designers create, evaluate, and optimize color palettes for accessibility and perceptual distinctness. It provides **built-in palettes** - a curated collection of ready-to-use distinct qualitative palettes optimized for categorical data - along with a suite of **utility functions** for evaluating, transforming, visualizing, and manipulating color palettes in a perceptually uniform space.
 
 ## Features
 
@@ -57,9 +54,9 @@ if ("Depends" %in% colnames(desc)) {
 - **Contrast Ratio Analysis**: Compute WCAG-compliant contrast ratios to ensure text and UI elements are readable.
 - **Color Attribute Inspection**: Compute per-color hue, lightness, chroma, warmth, and saturation in CIELAB space, returned as a data frame for downstream analysis or sorting.
 - **Palette Filtering**: Subset color palettes based on minimum perceptual distance (DeltaE), contrast ratio, maximum lightness, and/or minimum chroma, ensuring every retained color is distinct enough from all others, not too pale, and not too gray.
-- **Palette Reordering**: Scatter a color palette to maximize adjacent perceptual distance or sort it by perceptual attribute (hue, lightness, chroma, warmth, saturation).
+- **Palette Reordering**: Scatter a color palette to maximize adjacent perceptual distance, sort it by perceptual attribute (hue, lightness, chroma, warmth, saturation) or perceptual similarity.
 - **Visualization**: Display palettes as barplots or grids, visualize pairwise comparison metrics in labeled swatch grids, and render per-color attribute swatch grids with hue, lightness, chroma, warmth, and saturation labels.
-- **Workflow Utilities**: Copy palettes directly to the clipboard for easy integration into other scripts or design tools (only works in interactive R sessions).
+- **Workflow Utilities**: Copy palettes directly to the clipboard for easy integration into other scripts or design tools (only works in interactive R sessions). Compute the perceptually uniform mean of multiple hex colors to derive a single representative color.
 
 ## Installation
 
