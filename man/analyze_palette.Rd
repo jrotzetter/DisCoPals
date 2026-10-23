@@ -8,6 +8,8 @@ analyze_palette(
   pal,
   include_background = TRUE,
   metric = c("2000", "1994", "1976"),
+  plot = FALSE,
+  max_rows = 40,
   white_point = "D65"
 )
 }
@@ -21,6 +23,13 @@ readability against standard backgrounds.}
 \item{metric}{A \code{character} string specifying the DeltaE formula to use.
 Must be one of \code{"2000"} (CIEDE2000, best perceptual accuracy), \code{"1994"} (CIE94),
 or \code{"1976"} (CIE76). Defaults to \code{"2000"}.}
+
+\item{plot}{\code{Logical}. If \code{TRUE}, calls \code{\link[=plot_color_pair_metrics]{plot_color_pair_metrics()}} on the
+resulting combinations and prints the output to the active graphics device.
+Default: \code{FALSE}.}
+
+\item{max_rows}{\code{Integer}. When \code{plot = TRUE}and the number of rows exceeds
+this value, plots are split by unique colors. Default: \code{40}.}
 
 \item{white_point}{A \code{character} string specifying the reference white point
 for Lab conversion. \code{"D65"} (default) matches sRGB/screen standards.
@@ -39,6 +48,8 @@ A \code{data.frame} with the following columns:
 \item \code{C_2}: Chroma (\verb{C*}) of the second color.
 }
 Returns \code{NULL} if the resulting palette has fewer than 2 colors.
+When \code{plot = TRUE}, plots are printed as a side effect; the data.frame is
+still returned.
 }
 \description{
 Calculates pairwise color differences for a given palette using contrast ratio
@@ -69,6 +80,12 @@ the color is a shade of gray; higher values mean a more saturated, vivid color.
 For example, a pale pastel (e.g., light pink) has low chroma, while a
 bold/saturated red (e.g., fire-engine red) has high chroma.
 }
+
+\strong{Plotting:}
+When \code{plot = TRUE}, the results are passed to \code{\link[=plot_color_pair_metrics]{plot_color_pair_metrics()}} which
+renders a grid of labeled color swatches with contrast ratio and deltaE values.
+If the number of pairs exceeds \code{max_rows}, the output is split into separate
+plots grouped by \code{Col_1}.
 }
 \examples{
 \dontshow{if (.has_packages(c("colorspace", "spacesXYZ"))) withAutoprint(\{ # examplesIf}

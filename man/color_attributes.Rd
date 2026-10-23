@@ -13,8 +13,8 @@ Must not contain \code{NA} values.}
 \item{plot}{\code{Logical}. If \code{TRUE}, a swatch grid visualizing the attributes
 is printed. Default: \code{FALSE}.}
 
-\item{max_rows}{\code{Integer}. If the number of colors exceeds this
-value, the plot is split into sequential subsets of at most this many
+\item{max_rows}{\code{Integer}. When \code{plot = TRUE}and the number of colors exceeds
+this value, the plot is split into sequential subsets of at most this many
 rows. Default: \code{30}.}
 }
 \value{
@@ -36,6 +36,8 @@ Measures how chromatic the color appears relative to its brightness.
 Ranges from 0 (achromatic) approaching 1 for highly chromatic colors
 at low lightness.}
 }
+When \code{plot = TRUE}, plots are printed as a side effect; the data.frame is
+still returned.
 }
 \description{
 Converts a vector of hex colors to CIELAB space and returns a \code{data.frame}

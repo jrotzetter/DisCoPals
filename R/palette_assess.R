@@ -11,6 +11,11 @@
 #' @param metric A `character` string specifying the DeltaE formula to use.
 #'   Must be one of `"2000"` (CIEDE2000, best perceptual accuracy), `"1994"` (CIE94),
 #'   or `"1976"` (CIE76). Defaults to `"2000"`.
+#' @param plot `Logical`. If `TRUE`, calls [plot_color_pair_metrics()] on the
+#'   resulting combinations and prints the output to the active graphics device.
+#'   Default: `FALSE`.
+#' @param max_rows `Integer`. When `plot = TRUE`and the number of rows exceeds
+#'   this value, plots are split by unique colors. Default: `40`.
 #' @param white_point A `character` string specifying the reference white point
 #'   for Lab conversion. `"D65"` (default) matches sRGB/screen standards.
 #'   `"D50"` is typically used for print workflows. Passed to [convert_hex2Lab()].
@@ -27,6 +32,8 @@
 #'     \item `C_2`: Chroma (`C*`) of the second color.
 #'   }
 #'   Returns `NULL` if the resulting palette has fewer than 2 colors.
+#'   When `plot = TRUE`, plots are printed as a side effect; the data.frame is
+#'   still returned.
 #'
 #' @details
 #' The function relies on the `colorspace` package for contrast ratios and
@@ -49,6 +56,12 @@
 #'   For example, a pale pastel (e.g., light pink) has low chroma, while a
 #'   bold/saturated red (e.g., fire-engine red) has high chroma.
 #'
+#' **Plotting:**
+#' When `plot = TRUE`, the results are passed to [plot_color_pair_metrics()] which
+#' renders a grid of labeled color swatches with contrast ratio and deltaE values.
+#' If the number of pairs exceeds `max_rows`, the output is split into separate
+#' plots grouped by `Col_1`.
+#'
 #' @examplesIf .has_packages(c("colorspace", "spacesXYZ"))
 #' # Define a simple palette
 #' example_pal <- c("#E69F00", "#56B4E9", "#009E73")
@@ -64,11 +77,21 @@
 analyze_palette <- function(pal,
                             include_background = TRUE,
                             metric = c("2000", "1994", "1976"),
+                            plot = FALSE,
+                            max_rows = 40,
                             white_point = "D65") {
   .require_packages(c("colorspace", "spacesXYZ"))
 
   if (!is.character(pal) || any(is.na(pal))) {
     stop("Argument 'pal' must be a character vector without NA values.", call. = FALSE)
+  }
+  if (!all(grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", pal))) {
+    stop("Argument 'pal' must contain valid hex color values (e.g., \"#FF5733\").",
+      call. = FALSE
+    )
+  }
+  if (!is.logical(plot) || length(plot) != 1 || is.na(plot)) {
+    stop("Argument 'plot' must be a single non-NA logical value.", call. = FALSE)
   }
 
   metric <- match.arg(metric, choices = c("2000", "1994", "1976"))
@@ -123,7 +146,7 @@ analyze_palette <- function(pal,
   # Calculate DeltaE (vectorized)
   de_vals <- spacesXYZ::DeltaE(lab1, lab2, metric = metric)
 
-  data.frame(
+  out <- data.frame(
     Col_1 = col1_hex,
     Col_2 = col2_hex,
     contrast_ratio = cr_vals,
@@ -134,6 +157,13 @@ analyze_palette <- function(pal,
     C_2 = C_star[col2_hex],
     stringsAsFactors = FALSE
   )
+
+  if (plot) {
+    result <- plot_color_pair_metrics(out, max_rows = max_rows, return_list = FALSE)
+    if (!is.null(result)) print(result)
+  }
+
+  out
 }
 
 
@@ -147,8 +177,8 @@ analyze_palette <- function(pal,
 #'   Must not contain `NA` values.
 #' @param plot `Logical`. If `TRUE`, a swatch grid visualizing the attributes
 #'   is printed. Default: `FALSE`.
-#' @param max_rows `Integer`. If the number of colors exceeds this
-#'   value, the plot is split into sequential subsets of at most this many
+#' @param max_rows `Integer`. When `plot = TRUE`and the number of colors exceeds
+#'   this value, the plot is split into sequential subsets of at most this many
 #'   rows. Default: `30`.
 #'
 #' @return A `data.frame` with columns:
@@ -169,6 +199,8 @@ analyze_palette <- function(pal,
 #'       Ranges from 0 (achromatic) approaching 1 for highly chromatic colors
 #'       at low lightness.}
 #'   }
+#'   When `plot = TRUE`, plots are printed as a side effect; the data.frame is
+#'   still returned.
 #'
 #' @examples
 #' pal <- c("#FF5733", "#33FF57", "#3357FF", "#FF3357")
