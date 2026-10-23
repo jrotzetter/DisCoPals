@@ -79,7 +79,7 @@ show_colors <- function(pal, as_bar = TRUE, cex_label = 0.7) {
 }
 
 
-#' Visualize Color Combination Metrics
+#' Visualize Color Pair Metrics
 #'
 #' Visualizes color contrast and deltaE metrics for pairs of colors as a grid of
 #' labeled color swatches using `ggplot2`. For large datasets, plots can be
@@ -87,47 +87,61 @@ show_colors <- function(pal, as_bar = TRUE, cex_label = 0.7) {
 #'
 #' @param combinations A `data.frame` containing color comparison metrics, where
 #'   each row represents a color pair. This object is typically returned by
-#'   \code{\link{analyze_palette}}. It must contain the following columns:
+#'   [`analyze_palette()`]. It must contain the following columns:
 #'   \itemize{
-#'     \item \code{Col_1}: The first color in the pair (used for grouping/splitting).
-#'     \item \code{Col_2}: The second color in the pair (required for data integrity).
-#'     \item \code{contrast_ratio}: Numeric contrast ratio between the colors.
-#'     \item \code{deltaE}: Numeric color difference metric.
+#'     \item `Col_1`: The first color in the pair (used for grouping/splitting).
+#'     \item `Col_2`: The second color in the pair (required for data integrity).
+#'     \item `contrast_ratio`: Numeric contrast ratio between the colors.
+#'     \item `deltaE`: Numeric color difference metric.
 #'   }
 #'   Row names are used as pair identifiers.
 #' @param pairs_subset Optional `character` vector of row names to subset the combinations.
 #'   If provided, only these pairs are plotted.
-#' @param separation_threshold `Numeric`. If the number of rows exceeds this value,
+#' @param max_rows `Integer`. If the number of rows exceeds this value,
 #'   the function splits the output into separate plots per unique value in `Col_1`.
-#'   Default is 50.
+#'   Default is `Inf` (no splitting).
+#' @param return_list `Logical`. If `TRUE`, return a named list of `ggplot` objects
+#'   instead of printing to the graphics device. Names are the `Col_1` value for
+#'   each group. Default is `FALSE`.
 #'
-#' @return A `ggplot` object if a single plot is generated. If the plot is split
-#'   (due to `separation_threshold`), the function prints multiple plots and
-#'   returns `NULL` invisibly.
+#' @return
+#' \itemize{
+#'   \item If `nrow(combinations) <= max_rows`: a single `ggplot` object.
+#'   \item If splitting occurs and `return_list = FALSE`: each plot is printed
+#'     to the active graphics device; `NULL` is returned invisibly.
+#'   \item If splitting occurs and `return_list = TRUE`: a named list of
+#'     `ggplot` objects, one per `Col_1` group.
+#' }
 #' @export
 #'
-#' @seealso \code{\link{analyze_palette}} for generating the required input data.
+#' @seealso [analyze_palette()] for generating the required input data.
 #'
 #' @examplesIf .has_packages(c("tibble", "dplyr", "tidyr", "ggplot2", "stringr", "ggtext", "forcats", "colorspace", "spacesXYZ"))
 #' example_pal <- c("#E69F00", "#56B4E9", "#009E73")
 #' combos <- analyze_palette(example_pal, include_background = FALSE)
 #' rownames(combos) <- c("Pair1", "Pair2", "Pair3")
 #'
-#' # Plot all combinations
-#' plot_combinations(combos)
+#' # Plot all pairs
+#' plot_color_pair_metrics(combos)
 #'
 #' # Plot a subset of pairs
-#' plot_combinations(combos, pairs_subset = c("Pair1", "Pair3"))
+#' plot_color_pair_metrics(combos, pairs_subset = c("Pair1", "Pair3"))
 #'
 #' # Force splitting by first color
-#' plot_combinations(combos, separation_threshold = 2)
-plot_combinations <- function(combinations, pairs_subset = NULL, separation_threshold = 50) {
+#' plot_color_pair_metrics(combos, max_rows = 2)
+#'
+#' # Return plots as a list
+#' plots <- plot_color_pair_metrics(combos, max_rows = 2, return_list = TRUE)
+plot_color_pair_metrics <- function(combinations, pairs_subset = NULL, max_rows = Inf, return_list = FALSE) {
   .require_packages(c("tibble", "dplyr", "tidyr", "ggplot2", "stringr", "ggtext", "forcats", "rlang"))
 
   # Validate input
   required_cols <- c("contrast_ratio", "deltaE", "Col_1", "Col_2")
   if (!all(required_cols %in% names(combinations))) {
-    stop("combinations must include 'contrast_ratio', 'deltaE', 'Col_1', and 'Col_2' columns.")
+    stop("combinations must include columns: ",
+      paste(required_cols, collapse = ", "),
+      call. = FALSE
+    )
   }
 
   # Apply subset if requested
@@ -135,13 +149,12 @@ plot_combinations <- function(combinations, pairs_subset = NULL, separation_thre
     combinations <- combinations[rownames(combinations) %in% pairs_subset, , drop = FALSE]
   }
 
-  # Internal plotting function
-  .plot_colorswatch <- function(df) {
-    if (nrow(df) == 0) {
-      return(NULL)
-    }
+  if (nrow(combinations) == 0) {
+    return(invisible(NULL))
+  }
 
-    df |>
+  .build_plot <- function(chunk) {
+    chunk |>
       tibble::rownames_to_column(var = "pair") |>
       dplyr::mutate(
         contrast_ratio = as.character(round(.data$contrast_ratio, 3)),
@@ -161,31 +174,40 @@ plot_combinations <- function(combinations, pairs_subset = NULL, separation_thre
       ggplot2::labs(x = NULL, y = "Color Pair") +
       ggplot2::scale_y_discrete(expand = c(0, 0)) +
       ggplot2::scale_x_discrete(expand = c(0, 0), position = "top") +
-      ggplot2::theme_minimal() +
       ggplot2::theme(
         axis.text.x.top = ggtext::element_markdown(
-          box.color = "black", linewidth = 1, linetype = 1,
-          padding = grid::unit(c(5, 50, 5, 50), "pt"), size = 10
+          box.color = "black",
+          linewidth = 1,
+          linetype = 1,
+          padding = grid::unit(c(5, 50, 5, 50), "pt"),
+          size = 10,
+          margin = ggplot2::margin(b = 4.95)
         ),
+        axis.text.y.left = ggplot2::element_text(margin = ggplot2::margin(r = 4.95)),
         axis.line = ggplot2::element_blank(),
         axis.ticks = ggplot2::element_blank()
       )
   }
 
-  # Plotting logic
-  if (nrow(combinations) > separation_threshold) {
-    # Split by Col_1
-    unique_colors <- unique(combinations$Col_1)
-    for (color in unique_colors) {
-      subset_df <- combinations[combinations$Col_1 == color, , drop = FALSE]
-      p <- .plot_colorswatch(subset_df)
-      if (!is.null(p)) print(p)
-    }
-    invisible(NULL)
-  } else {
-    # Single plot
-    return(.plot_colorswatch(combinations))
+  if (nrow(combinations) <= max_rows) {
+    return(.build_plot(combinations))
   }
+
+  # Split by Col_1
+  unique_colors <- unique(combinations$Col_1)
+
+  if (return_list) {
+    plots <- lapply(unique_colors, function(color) {
+      .build_plot(combinations[combinations$Col_1 == color, , drop = FALSE])
+    })
+    names(plots) <- unique_colors
+    return(plots)
+  }
+
+  for (color in unique_colors) {
+    print(.build_plot(combinations[combinations$Col_1 == color, , drop = FALSE]))
+  }
+  invisible(NULL)
 }
 
 
