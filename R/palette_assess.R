@@ -14,7 +14,7 @@
 #' @param plot `Logical`. If `TRUE`, calls [plot_color_pair_metrics()] on the
 #'   resulting combinations and prints the output to the active graphics device.
 #'   Default: `FALSE`.
-#' @param max_rows `Integer`. When `plot = TRUE`and the number of rows exceeds
+#' @param max_rows `Integer`. When `plot = TRUE` and the number of rows exceeds
 #'   this value, plots are split by unique colors. Default: `40`.
 #' @param white_point A `character` string specifying the reference white point
 #'   for Lab conversion. `"D65"` (default) matches sRGB/screen standards.
@@ -72,7 +72,7 @@
 #' # Analyze without adding standard background colors using an older metric
 #' analyze_palette(example_pal, include_background = FALSE, metric = "1976")
 #'
-#' @seealso [colorspace::contrast_ratio()], [spacesXYZ::DeltaE()]
+#' @seealso [plot_color_pair_metrics()], [colorspace::contrast_ratio()], [spacesXYZ::DeltaE()]
 #' @export
 analyze_palette <- function(pal,
                             include_background = TRUE,

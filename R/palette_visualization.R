@@ -95,11 +95,14 @@ show_colors <- function(pal, as_bar = TRUE, cex_label = 0.7) {
 #'     \item `deltaE`: Numeric color difference metric.
 #'   }
 #'   Row names are used as pair identifiers.
-#' @param pairs_subset Optional `character` vector of row names to subset the combinations.
-#'   If provided, only these pairs are plotted.
+#' @param pairs_subset Optional `character` vector of row names to subset the
+#'   combinations. If provided, only these pairs are plotted.
 #' @param max_rows `Integer`. If the number of rows exceeds this value,
 #'   the function splits the output into separate plots per unique value in `Col_1`.
 #'   Default is `Inf` (no splitting).
+#' @param max_plots `Integer`. Maximum number of plots to produce when
+#'   splitting. If splitting would exceed this, the function stops with an
+#'   error to avoid generating a large number of plot objects. Default is 15.
 #' @param return_list `Logical`. If `TRUE`, return a named list of `ggplot` objects
 #'   instead of printing to the graphics device. Names are the `Col_1` value for
 #'   each group. Default is `FALSE`.
@@ -132,7 +135,11 @@ show_colors <- function(pal, as_bar = TRUE, cex_label = 0.7) {
 #'
 #' # Return plots as a list
 #' plots <- plot_color_pair_metrics(combos, max_rows = 2, return_list = TRUE)
-plot_color_pair_metrics <- function(combinations, pairs_subset = NULL, max_rows = Inf, return_list = FALSE) {
+plot_color_pair_metrics <- function(combinations,
+                                    pairs_subset = NULL,
+                                    max_rows = Inf,
+                                    max_plots = 15,
+                                    return_list = FALSE) {
   .require_packages(c("tibble", "dplyr", "tidyr", "ggplot2", "stringr", "ggtext", "forcats", "rlang"))
 
   # Validate input
@@ -195,6 +202,17 @@ plot_color_pair_metrics <- function(combinations, pairs_subset = NULL, max_rows 
 
   # Split by Col_1
   unique_colors <- unique(combinations$Col_1)
+
+  n_plots <- length(unique_colors)
+
+  if (n_plots > max_plots) {
+    stop(
+      "Splitting by Col_1 would produce ", n_plots, " plots, ",
+      "exceeding max_plots = ", max_plots, ". ",
+      "Increase max_plots or narrow the data with pairs_subset.",
+      call. = TRUE
+    )
+  }
 
   if (return_list) {
     plots <- lapply(unique_colors, function(color) {

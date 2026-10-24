@@ -28,7 +28,7 @@ or \code{"1976"} (CIE76). Defaults to \code{"2000"}.}
 resulting combinations and prints the output to the active graphics device.
 Default: \code{FALSE}.}
 
-\item{max_rows}{\code{Integer}. When \code{plot = TRUE}and the number of rows exceeds
+\item{max_rows}{\code{Integer}. When \code{plot = TRUE} and the number of rows exceeds
 this value, plots are split by unique colors. Default: \code{40}.}
 
 \item{white_point}{A \code{character} string specifying the reference white point
@@ -100,5 +100,5 @@ analyze_palette(example_pal, include_background = FALSE, metric = "1976")
 \dontshow{\}) # examplesIf}
 }
 \seealso{
-\code{\link[colorspace:contrast_ratio]{colorspace::contrast_ratio()}}, \code{\link[spacesXYZ:DeltaE]{spacesXYZ::DeltaE()}}
+\code{\link[=plot_color_pair_metrics]{plot_color_pair_metrics()}}, \code{\link[colorspace:contrast_ratio]{colorspace::contrast_ratio()}}, \code{\link[spacesXYZ:DeltaE]{spacesXYZ::DeltaE()}}
 }

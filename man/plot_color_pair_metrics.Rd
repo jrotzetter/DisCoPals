@@ -8,6 +8,7 @@ plot_color_pair_metrics(
   combinations,
   pairs_subset = NULL,
   max_rows = Inf,
+  max_plots = 15,
   return_list = FALSE
 )
 }
@@ -23,12 +24,16 @@ each row represents a color pair. This object is typically returned by
 }
 Row names are used as pair identifiers.}
 
-\item{pairs_subset}{Optional \code{character} vector of row names to subset the combinations.
-If provided, only these pairs are plotted.}
+\item{pairs_subset}{Optional \code{character} vector of row names to subset the
+combinations. If provided, only these pairs are plotted.}
 
 \item{max_rows}{\code{Integer}. If the number of rows exceeds this value,
 the function splits the output into separate plots per unique value in \code{Col_1}.
 Default is \code{Inf} (no splitting).}
+
+\item{max_plots}{\code{Integer}. Maximum number of plots to produce when
+splitting. If splitting would exceed this, the function stops with an
+error to avoid generating a large number of plot objects. Default is 15.}
 
 \item{return_list}{\code{Logical}. If \code{TRUE}, return a named list of \code{ggplot} objects
 instead of printing to the graphics device. Names are the \code{Col_1} value for
