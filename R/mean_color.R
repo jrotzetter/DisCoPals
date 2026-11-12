@@ -117,12 +117,10 @@
 mean_color <- function(hex, weights = NULL, space = c("oklch", "hcl")) {
   space <- match.arg(space)
 
-  if (!is.character(hex) || any(is.na(hex))) {
-    stop("Argument 'hex' must be a character vector without NA values.", call. = FALSE)
-  }
-  if (!all(grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", hex))) {
-    stop("Argument 'hex' must contain valid hex color values (e.g., \"#FF5733\").")
-  }
+  hex <- .validate_hex(hex, normalize = TRUE)
+  # Note: can't deduplicate here as it would cause length mismatch and
+  # positional misalignment between hex codes and weights
+
   if (!is.null(weights) && length(weights) != length(hex)) {
     stop("Argument 'weights' must either be NULL or of the same length as 'hex'.")
   }

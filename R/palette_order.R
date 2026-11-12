@@ -52,16 +52,8 @@ sort_by_attribute <- function(pal,
                               gray_threshold = 1) {
   by <- match.arg(by)
 
-  if (!is.character(pal) || any(is.na(pal))) {
-    stop("Argument 'pal' must be a character vector without NA values.", call. = FALSE)
-  }
-  if (!all(grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", pal))) {
-    stop("Argument 'pal' must contain valid hex color values (e.g., \"#FF5733\").",
-      call. = FALSE
-    )
-  }
+  pal <- .validate_hex(pal, normalize = TRUE)
 
-  pal <- toupper(pal)
   pal <- pal[!duplicated(pal)]
 
   if (length(pal) < 2) {
@@ -158,16 +150,8 @@ sort_by_similarity <- function(pal,
   metric <- match.arg(metric)
   hclust_method <- match.arg(hclust_method)
 
-  if (!is.character(pal) || any(is.na(pal))) {
-    stop("Argument 'pal' must be a character vector without NA values.", call. = FALSE)
-  }
-  if (!all(grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", pal))) {
-    stop("Argument 'pal' must contain valid hex color values (e.g., \"#FF5733\").",
-      call. = FALSE
-    )
-  }
+  pal <- .validate_hex(pal, normalize = TRUE)
 
-  pal <- toupper(pal)
   pal <- pal[!duplicated(pal)]
   if (length(pal) < 2) {
     return(pal)
@@ -226,16 +210,8 @@ sort_by_similarity <- function(pal,
 #'
 #' @export
 scatter_palette <- function(pal) {
-  if (!is.character(pal) || any(is.na(pal))) {
-    stop("Argument 'pal' must be a character vector without NA values.", call. = FALSE)
-  }
-  if (!all(grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", pal))) {
-    stop("Argument 'pal' must contain valid hex color values (e.g., \"#FF5733\").",
-      call. = FALSE
-    )
-  }
+  pal <- .validate_hex(pal, normalize = TRUE)
 
-  pal <- toupper(pal)
   pal <- pal[!duplicated(pal)]
 
   n <- length(pal)

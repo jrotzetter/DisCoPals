@@ -89,6 +89,46 @@ copy_palette <- function(pal) {
 }
 
 
+#' Validate (and optionally normalize) a hex color vector
+#'
+#' @param hex The input vector to validate.
+#' @param normalize If `TRUE` (default), returns the vector uppercased and
+#'   with 3-digit codes expanded to 6 digits. If `FALSE`, returns the input
+#'   unchanged after validation.
+#'
+#' @return The (optionally normalized) character vector.
+#' @keywords internal
+#' @noRd
+.validate_hex <- function(hex, normalize = TRUE) {
+  if (!is.character(hex) || any(is.na(hex))) {
+    stop("Argument 'hex' must be a character vector without NA values.",
+      call. = FALSE
+    )
+  }
+  if (!all(grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", hex))) {
+    bad <- which(!grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", hex))
+    stop(sprintf(
+      "Invalid hex color(s) at position(s): %s. Expected format: \"#RRGGBB\" or \"#RGB\".",
+      paste(bad, collapse = ", ")
+    ), call. = FALSE)
+  }
+
+  if (normalize) {
+    hex <- toupper(hex)
+    # Expand 3-digit to 6-digit: "#F53" -> "#FF5533"
+    short <- nchar(hex) == 4
+    if (any(short)) {
+      hex[short] <- paste0(
+        "#", strrep(substr(hex[short], 2, 2), 2),
+        strrep(substr(hex[short], 3, 3), 2),
+        strrep(substr(hex[short], 4, 4), 2)
+      )
+    }
+  }
+  hex
+}
+
+
 #' Convert Hex Colors to CIELAB Space
 #'
 #' Transforms a vector of hexadecimal color codes into the device-independent
@@ -134,12 +174,7 @@ copy_palette <- function(pal) {
 #' @seealso [grDevices::col2rgb()], [grDevices::convertColor()]
 #' @export
 convert_hex2Lab <- function(hex, white_point = "D65") {
-  if (!is.character(hex) || any(is.na(hex))) {
-    stop("Argument 'hex' must be a character vector without NA values.", call. = FALSE)
-  }
-  if (!all(grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", hex))) {
-    stop("Argument 'hex' must contain valid hex color values (e.g., \"#FF5733\").")
-  }
+  hex <- .validate_hex(hex, normalize = TRUE)
   if (!is.character(white_point) || length(white_point) != 1) {
     stop("Argument 'white_point' must be a single character string.", call. = FALSE)
   }
@@ -154,7 +189,6 @@ convert_hex2Lab <- function(hex, white_point = "D65") {
 
   # Deduplication necessary as hex values will be row names of output matrix
   # which must be unique keys
-  hex <- toupper(hex)
   unique_hex <- unique(hex)
   n <- length(unique_hex)
 

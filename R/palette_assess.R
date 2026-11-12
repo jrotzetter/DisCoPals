@@ -82,22 +82,14 @@ analyze_palette <- function(pal,
                             white_point = "D65") {
   .require_packages(c("colorspace", "spacesXYZ"))
 
-  if (!is.character(pal) || any(is.na(pal))) {
-    stop("Argument 'pal' must be a character vector without NA values.", call. = FALSE)
-  }
-  if (!all(grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", pal))) {
-    stop("Argument 'pal' must contain valid hex color values (e.g., \"#FF5733\").",
-      call. = FALSE
-    )
-  }
+  # Ensure case-insensitive matching (e.g., "#ffffff" vs "#FFFFFF")
+  pal <- .validate_hex(pal, normalize = TRUE)
+
   if (!is.logical(plot) || length(plot) != 1 || is.na(plot)) {
     stop("Argument 'plot' must be a single non-NA logical value.", call. = FALSE)
   }
 
   metric <- match.arg(metric, choices = c("2000", "1994", "1976"))
-
-  # Ensure case-insensitive matching (e.g., "#ffffff" vs "#FFFFFF")
-  pal <- toupper(pal)
 
   if (include_background) {
     # Define standard backgrounds
@@ -210,19 +202,12 @@ analyze_palette <- function(pal,
 #'
 #' @export
 color_attributes <- function(pal, plot = FALSE, max_rows = 30) {
-  if (!is.character(pal) || any(is.na(pal))) {
-    stop("Argument 'pal' must be a character vector without NA values.", call. = FALSE)
-  }
-  if (!all(grepl("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$", pal))) {
-    stop("Argument 'pal' must contain valid hex color values (e.g., \"#FF5733\").",
-      call. = FALSE
-    )
-  }
+  pal <- .validate_hex(pal, normalize = TRUE)
+
   if (!is.logical(plot) || length(plot) != 1 || is.na(plot)) {
     stop("Argument 'plot' must be a single non-NA logical value.", call. = FALSE)
   }
 
-  pal <- toupper(pal)
   dup_idx <- which(duplicated(pal))
   if (length(dup_idx) > 0) {
     msg <- paste0(
@@ -398,6 +383,10 @@ filter_palette <- function(pal, min_distance = NULL, min_contrast = NULL,
 
   # --- 1. Input Validation ---
 
+  # Normalize input to uppercase to ensure case-insensitive match if hex codes
+  # vary, especially for exact matching with background
+  pal <- .validate_hex(pal, normalize = TRUE)
+
   if (!is.null(min_distance) && !is.numeric(min_distance)) {
     stop("Argument 'min_distance' must be NULL or a numeric value.", call. = FALSE)
   }
@@ -424,10 +413,6 @@ filter_palette <- function(pal, min_distance = NULL, min_contrast = NULL,
     message("Only one color provided; no comparisons possible. Returning input.")
     return(pal)
   }
-
-  # Normalize input to uppercase to ensure case-insensitive match if hex codes
-  # vary, especially for exact matching with background
-  pal <- toupper(pal)
 
   # --- 2. Snapshot Original Backgrounds ---
 
