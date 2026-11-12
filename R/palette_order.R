@@ -61,6 +61,7 @@ sort_by_attribute <- function(pal,
     )
   }
 
+  pal <- toupper(pal)
   pal <- pal[!duplicated(pal)]
 
   if (length(pal) < 2) {
@@ -166,6 +167,7 @@ sort_by_similarity <- function(pal,
     )
   }
 
+  pal <- toupper(pal)
   pal <- pal[!duplicated(pal)]
   if (length(pal) < 2) {
     return(pal)
@@ -233,6 +235,7 @@ scatter_palette <- function(pal) {
     )
   }
 
+  pal <- toupper(pal)
   pal <- pal[!duplicated(pal)]
 
   n <- length(pal)

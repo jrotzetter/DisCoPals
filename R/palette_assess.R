@@ -222,6 +222,7 @@ color_attributes <- function(pal, plot = FALSE, max_rows = 30) {
     stop("Argument 'plot' must be a single non-NA logical value.", call. = FALSE)
   }
 
+  pal <- toupper(pal)
   dup_idx <- which(duplicated(pal))
   if (length(dup_idx) > 0) {
     msg <- paste0(

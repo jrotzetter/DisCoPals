@@ -154,6 +154,7 @@ convert_hex2Lab <- function(hex, white_point = "D65") {
 
   # Deduplication necessary as hex values will be row names of output matrix
   # which must be unique keys
+  hex <- toupper(hex)
   unique_hex <- unique(hex)
   n <- length(unique_hex)
 
