@@ -14,7 +14,8 @@ or \code{"#F53"}).}
 color. If \code{NULL} (default), all colors are weighted equally.}
 
 \item{space}{The color space in which to compute the mean.
-\code{"oklch"} (default) uses the OKLCH space; \code{"hcl"} uses CIELUV.}
+\code{"oklch"} (default) uses the polar form of OKLCH space; \code{"hcl"} uses
+the polar form of CIELUV.}
 }
 \value{
 A single hex color string (\code{"#RRGGBB"}).
@@ -26,9 +27,13 @@ single representative when building a palette.
 }
 \details{
 Hue is combined using a weighted circular mean, while lightness and
-chroma use weighted arithmetic means. Operating in a perceptually uniform
-space rather than RGB yields a more accurate result than a naive per-channel
-RGB average.
+chroma use weighted arithmetic means. Averaging in the polar (LCH) form
+preserves chroma (unlike a Cartesian mean in the corresponding Lab or
+Luv space, which would desaturate when hues differ). Out-of-gamut
+results are clamped per channel.
+
+Operating in a perceptually uniform space rather than RGB yields a more
+accurate result than a naive per-channel RGB average.
 }
 \examples{
 # Equal-weight mean of two colors
